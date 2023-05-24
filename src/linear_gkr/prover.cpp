@@ -9,11 +9,11 @@
 #include <queue>
 #include <cstring>
 
-prime_field::field_element from_string(const char* str)
+prime_field::field_element from_string(const char *str)
 {
 	prime_field::field_element ret = prime_field::field_element(0);
 	int len = strlen(str);
-	for(int i = 0; i < len; ++i)
+	for (int i = 0; i < len; ++i)
 	{
 		int digit = str[i] - '0';
 		ret = ret * prime_field::field_element(10) + prime_field::field_element(digit);
@@ -27,16 +27,16 @@ void zk_prover::get_circuit(layered_circuit &from_verifier)
 	inv_2 = prime_field::inv(prime_field::field_element(2));
 }
 
-prime_field::field_element zk_prover::V_res(const prime_field::field_element* one_minus_r_0, const prime_field::field_element* r_0, const prime_field::field_element* output_raw, int r_0_size, int output_size)
+prime_field::field_element zk_prover::V_res(const prime_field::field_element *one_minus_r_0, const prime_field::field_element *r_0, const prime_field::field_element *output_raw, int r_0_size, int output_size)
 {
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
 	prime_field::field_element *output;
 	output = new prime_field::field_element[output_size];
-	for(int i = 0; i < output_size; ++i)
+	for (int i = 0; i < output_size; ++i)
 		output[i] = output_raw[i];
-	for(int i = 0; i < r_0_size; ++i)
+	for (int i = 0; i < r_0_size; ++i)
 	{
-		for(int j = 0; j < (output_size >> 1); ++j)
+		for (int j = 0; j < (output_size >> 1); ++j)
 		{
 			output[j] = (output[j << 1] * one_minus_r_0[i] + output[j << 1 | 1] * r_0[i]);
 		}
@@ -51,109 +51,125 @@ prime_field::field_element zk_prover::V_res(const prime_field::field_element* on
 	return res;
 }
 
-prime_field::field_element* zk_prover::evaluate()
+prime_field::field_element *zk_prover::evaluate()
 {
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
-	//circuit_value[0] = new prime_field::field_element[(1 << C -> circuit[0].bit_length)];
-	for(int i = 0; i < (1 << C -> circuit[0].bit_length); ++i)
+	// circuit_value[0] = new prime_field::field_element[(1 << C -> circuit[0].bit_length)];
+	// printf("Evaluate,	1 << bit_length %d\n", 1 << C->circuit[0].bit_length);
+	for (int i = 0; i < (1 << C->circuit[0].bit_length); ++i)
 	{
 		int g, u, ty;
 		g = i;
-		u = C -> circuit[0].gates[g].u;
-		ty = C -> circuit[0].gates[g].ty;
+		u = C->circuit[0].gates[g].u;
+		ty = C->circuit[0].gates[g].ty;
+		// printf("i:0, g:%d, ty: %d\n", g, ty);
+		// printf("ty:%d,	circuit_value[0][%d].real:%lld, img, %lld\n", ty, g, circuit_value[0][g].real, circuit_value[0][g].img);
+
 		assert(ty == 3 || ty == 2);
 	}
-	assert(C -> total_depth < 1000000);
-	for(int i = 1; i < C -> total_depth; ++i)
+	assert(C->total_depth < 1000000);
+	// printf("	C->total_depth %d\n", C->total_depth);
+	for (int i = 1; i < C->total_depth; ++i)
 	{
-		circuit_value[i] = new prime_field::field_element[(1 << C -> circuit[i].bit_length)];
-		for(int j = 0; j < (1 << C -> circuit[i].bit_length); ++j)
+		circuit_value[i] = new prime_field::field_element[(1 << C->circuit[i].bit_length)];
+		// printf("	1 << bit_length %d\n", 1 << C->circuit[i].bit_length);
+		for (int j = 0; j < (1 << C->circuit[i].bit_length); ++j)
 		{
 			int g, u, v, ty;
 			g = j;
-			ty = C -> circuit[i].gates[g].ty;
-			u = C -> circuit[i].gates[g].u;
-			v = C -> circuit[i].gates[g].v;
-			if(ty == 0)
+			ty = C->circuit[i].gates[g].ty;
+			u = C->circuit[i].gates[g].u;
+			v = C->circuit[i].gates[g].v;
+			// printf("g: %d, ty: %d", g, ty);
+			if (ty == 0)
 			{
 				circuit_value[i][g] = circuit_value[i - 1][u] + circuit_value[i - 1][v];
 			}
-			else if(ty == 1)
+			else if (ty == 1)
 			{
-				assert(u >= 0 && u < ((1 << C -> circuit[i - 1].bit_length)));
-				assert(v >= 0 && v < ((1 << C -> circuit[i - 1].bit_length)));
+				assert(u >= 0 && u < ((1 << C->circuit[i - 1].bit_length)));
+				assert(v >= 0 && v < ((1 << C->circuit[i - 1].bit_length)));
 				circuit_value[i][g] = circuit_value[i - 1][u] * circuit_value[i - 1][v];
 			}
-			else if(ty == 2)
+			else if (ty == 2)
 			{
 				circuit_value[i][g] = prime_field::field_element(0);
 			}
-			else if(ty == 3)
+			else if (ty == 3)
 			{
 				circuit_value[i][g] = prime_field::field_element(u);
 			}
-			else if(ty == 4)
+			else if (ty == 4)
 			{
 				circuit_value[i][g] = circuit_value[i - 1][u];
 			}
-			else if(ty == 5)
+			else if (ty == 5)
 			{
 				circuit_value[i][g] = prime_field::field_element(0);
-				for(int k = u; k < v; ++k)
+				for (int k = u; k < v; ++k)
 					circuit_value[i][g] = circuit_value[i][g] + circuit_value[i - 1][k];
 			}
-			else if(ty == 6)
+			else if (ty == 6)
 			{
 				circuit_value[i][g] = prime_field::field_element(1) - circuit_value[i - 1][u];
 			}
-			else if(ty == 7)
+			else if (ty == 7)
 			{
 				circuit_value[i][g] = circuit_value[i - 1][u] - circuit_value[i - 1][v];
 			}
-			else if(ty == 8)
+			else if (ty == 8)
 			{
 				auto &x = circuit_value[i - 1][u], &y = circuit_value[i - 1][v];
 				circuit_value[i][g] = x + y - prime_field::field_element(2) * x * y;
 			}
-			else if(ty == 9)
+			else if (ty == 9)
 			{
-				assert(u >= 0 && u < ((1 << C -> circuit[i - 1].bit_length)));
-				assert(v >= 0 && v < ((1 << C -> circuit[i - 1].bit_length)));
+				assert(u >= 0 && u < ((1 << C->circuit[i - 1].bit_length)));
+				assert(v >= 0 && v < ((1 << C->circuit[i - 1].bit_length)));
 				auto &x = circuit_value[i - 1][u], &y = circuit_value[i - 1][v];
 				circuit_value[i][g] = y - x * y;
 			}
-			else if(ty == 10)
+			else if (ty == 10)
 			{
 				circuit_value[i][g] = circuit_value[i - 1][u];
 			}
-			else if(ty == 12)
+			else if (ty == 12)
 			{
 				circuit_value[i][g] = prime_field::field_element(0);
 				assert(v - u + 1 <= 60);
-				for(int k = u; k <= v; ++k)
+				for (int k = u; k <= v; ++k)
 				{
 					circuit_value[i][g] = circuit_value[i][g] + circuit_value[i - 1][k] * prime_field::field_element(1ULL << (k - u));
 				}
 			}
-			else if(ty == 13)
+			else if (ty == 13)
 			{
 				assert(u == v);
-				assert(u >= 0 && u < ((1 << C -> circuit[i - 1].bit_length)));
+				assert(u >= 0 && u < ((1 << C->circuit[i - 1].bit_length)));
 				circuit_value[i][g] = circuit_value[i - 1][u] * (prime_field::field_element(1) - circuit_value[i - 1][v]);
 			}
-			else if(ty == 14)
+			else if (ty == 14)
 			{
 				circuit_value[i][g] = prime_field::field_element(0);
-				for(int k = 0; k < C -> circuit[i].gates[g].parameter_length; ++k)
+				for (int k = 0; k < C->circuit[i].gates[g].parameter_length; ++k)
 				{
-					prime_field::field_element weight = C -> circuit[i].gates[g].weight[k];
-					long long idx = C -> circuit[i].gates[g].src[k];
+					prime_field::field_element weight = C->circuit[i].gates[g].weight[k];
+					if (k < 3 && g < 130)
+					{
+						printf("\ti:%d, g:%d,	weight.real:%lld, img:%lld\n", i, g, weight.real, weight.img);
+					}
+					long long idx = C->circuit[i].gates[g].src[k];
 					circuit_value[i][g] = circuit_value[i][g] + circuit_value[i - 1][idx] * weight;
 				}
 			}
 			else
 			{
 				assert(false);
+			}
+			if (i == 2 && g < 130)
+			{
+
+				printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
 			}
 		}
 	}
@@ -162,23 +178,33 @@ prime_field::field_element* zk_prover::evaluate()
 
 	std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
 	std::cerr << "total evaluation time: " << time_span.count() << " seconds." << std::endl;
-	return circuit_value[C -> total_depth - 1];
+	// FILE *out = fopen("./text.txt", "w");
+	// for (int i = 0; i < (1 << C->circuit[C->total_depth - 1].bit_length); ++i)
+	// {
+	// 	fprintf(out, "%lld %lld\n", circuit_value[C->total_depth - 1][i].real, circuit_value[C->total_depth - 1][i].img);
+	// 	printf("	result[%d].real:%lld,  result[].img %lld\n", i, circuit_value[C->total_depth - 1][i].real, circuit_value[C->total_depth - 1][i].img);
+	// }
+	// fclose(out);
+
+	return circuit_value[C->total_depth - 1];
 }
 
 void zk_prover::get_witness(prime_field::field_element *inputs, int N)
 {
-	circuit_value[0] = new prime_field::field_element[(1 << C -> circuit[0].bit_length)];
-	for(int i = 0; i < N; ++i)
+	circuit_value[0] = new prime_field::field_element[(1 << C->circuit[0].bit_length)];
+	FILE *out = fopen("./witness.txt", "w");
+	for (int i = 0; i < N; ++i)
 	{
 		circuit_value[0][i] = inputs[i];
+		// fprintf(out, "%lld %lld\n", circuit_value[0][i].real, circuit_value[0][i].img);
 	}
+	fclose(out);
 }
 
-
-void zk_prover::sumcheck_init(int layer_id, int bit_length_g, int bit_length_u, int bit_length_v, 
-	const prime_field::field_element &a, const prime_field::field_element &b, 
-	const prime_field::field_element* R_0, const prime_field::field_element* R_1,
-	prime_field::field_element* o_r_0, prime_field::field_element *o_r_1)
+void zk_prover::sumcheck_init(int layer_id, int bit_length_g, int bit_length_u, int bit_length_v,
+															const prime_field::field_element &a, const prime_field::field_element &b,
+															const prime_field::field_element *R_0, const prime_field::field_element *R_1,
+															prime_field::field_element *o_r_0, prime_field::field_element *o_r_1)
 {
 	r_0 = R_0;
 	r_1 = R_1;
@@ -211,7 +237,7 @@ void zk_prover::init_array(int max_bit_length)
 	V_mult_add_new = new linear_poly[1 << max_bit_length];
 	addV_array_new = new linear_poly[1 << max_bit_length];
 	add_mult_sum_new = new linear_poly[1 << max_bit_length];
-	rets_prev  = new quadratic_poly[1 << max_bit_length];
+	rets_prev = new quadratic_poly[1 << max_bit_length];
 	rets_cur = new quadratic_poly[1 << max_bit_length];
 }
 
@@ -233,7 +259,7 @@ void zk_prover::delete_self()
 
 	delete[] rets_prev;
 	delete[] rets_cur;
-	for(int i = 0; i < C -> total_depth; ++i)
+	for (int i = 0; i < C->total_depth; ++i)
 		delete[] circuit_value[i];
 }
 
@@ -241,15 +267,17 @@ zk_prover::~zk_prover()
 {
 }
 
-
-
 void zk_prover::sumcheck_phase1_init()
 {
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
-	//mult init
-	total_uv = (1 << C -> circuit[sumcheck_layer_id - 1].bit_length);
+	// mult init
+	total_uv = (1 << C->circuit[sumcheck_layer_id - 1].bit_length);
+	printf("	total_uv: %d\n", total_uv);
+
 	prime_field::field_element zero = prime_field::field_element(0);
-	for(int i = 0; i < total_uv; ++i)
+	// printf("	circuit_value[][0].real:%lld,  circuit_value[][0].img, %lld\n", circuit_value[sumcheck_layer_id - 1][0].real, circuit_value[sumcheck_layer_id - 1][0].img);
+
+	for (int i = 0; i < total_uv; ++i)
 	{
 		V_mult_add[i] = circuit_value[sumcheck_layer_id - 1][i];
 
@@ -258,7 +286,7 @@ void zk_prover::sumcheck_phase1_init()
 		add_mult_sum[i].a = zero;
 		add_mult_sum[i].b = zero;
 	}
-	
+
 	beta_g_r0_fhalf[0] = alpha;
 	beta_g_r1_fhalf[0] = beta;
 	beta_g_r0_shalf[0] = prime_field::field_element(1);
@@ -266,9 +294,9 @@ void zk_prover::sumcheck_phase1_init()
 
 	int first_half = length_g >> 1, second_half = length_g - first_half;
 
-	for(int i = 0; i < first_half; ++i)
+	for (int i = 0; i < first_half; ++i)
 	{
-		for(int j = 0; j < (1 << i); ++j)
+		for (int j = 0; j < (1 << i); ++j)
 		{
 			beta_g_r0_fhalf[j | (1 << i)] = beta_g_r0_fhalf[j] * r_0[i];
 			beta_g_r0_fhalf[j] = beta_g_r0_fhalf[j] * one_minus_r_0[i];
@@ -277,9 +305,9 @@ void zk_prover::sumcheck_phase1_init()
 		}
 	}
 
-	for(int i = 0; i < second_half; ++i)
+	for (int i = 0; i < second_half; ++i)
 	{
-		for(int j = 0; j < (1 << i); ++j)
+		for (int j = 0; j < (1 << i); ++j)
 		{
 			beta_g_r0_shalf[j | (1 << i)] = beta_g_r0_shalf[j] * r_0[i + first_half];
 			beta_g_r0_shalf[j] = beta_g_r0_shalf[j] * one_minus_r_0[i + first_half];
@@ -293,297 +321,284 @@ void zk_prover::sumcheck_phase1_init()
 	prime_field::field_element *intermediates0 = new prime_field::field_element[1 << length_g];
 	prime_field::field_element *intermediates1 = new prime_field::field_element[1 << length_g];
 
-	#pragma omp parallel for
-	for(int i = 0; i < (1 << length_g); ++i)
+#pragma omp parallel for
+	for (int i = 0; i < (1 << length_g); ++i)
 	{
 		int u, v;
-		u = C -> circuit[sumcheck_layer_id].gates[i].u;
-		v = C -> circuit[sumcheck_layer_id].gates[i].v;
-		switch(C -> circuit[sumcheck_layer_id].gates[i].ty)
+		u = C->circuit[sumcheck_layer_id].gates[i].u;
+		v = C->circuit[sumcheck_layer_id].gates[i].v;
+		switch (C->circuit[sumcheck_layer_id].gates[i].ty)
 		{
-			case 0: //add gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				intermediates0[i] = circuit_value[sumcheck_layer_id - 1][v] * tmp;
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 2:
-			{
-				break;
-			}
-			case 1: //mult gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				intermediates0[i] = circuit_value[sumcheck_layer_id - 1][v] * tmp;
-				break;
-			}
-			case 5: //sum gate
-			{
-				auto tmp = beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-					+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half];
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 12: //exp sum gate
-			{
-				auto tmp = beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-					+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half];
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 4: //direct relay gate
-			{
-				auto tmp = (beta_g_r0_fhalf[u & mask_fhalf] * beta_g_r0_shalf[u >> first_half] 
-						+ beta_g_r1_fhalf[u & mask_fhalf] * beta_g_r1_shalf[u >> first_half]);
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 6: //NOT gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 7: //minus gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				intermediates0[i] = circuit_value[sumcheck_layer_id - 1][v] * tmp;
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 8: //XOR gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				auto tmp_V = tmp * circuit_value[sumcheck_layer_id - 1][v];
-				auto tmp_2V = tmp_V + tmp_V;
-				intermediates0[i] = tmp_V;
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 13: //bit-test gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				auto tmp_V = tmp * circuit_value[sumcheck_layer_id - 1][v];
-				intermediates0[i] = tmp_V;
-				intermediates1[i] = tmp;
-				break;
-			}
-			case 9: //NAAB gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				auto tmpV = tmp * circuit_value[sumcheck_layer_id - 1][v];
-				intermediates1[i] = tmpV;
-				break;
-			}
-			case 10: //relay gate
-			{
-				auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-						+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
-				intermediates0[i] = tmp;
-				break;
-			}
-			case 14: //custom comb
-			{
-				auto tmp = beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] 
-					+ beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half];
-				intermediates1[i] = tmp;
-				break;
-			}
-			default:
-			{
-				printf("Warning Unknown gate %d\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-				break;
-			}
+		case 0: // add gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			intermediates0[i] = circuit_value[sumcheck_layer_id - 1][v] * tmp;
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 2:
+		{
+			break;
+		}
+		case 1: // mult gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			intermediates0[i] = circuit_value[sumcheck_layer_id - 1][v] * tmp;
+			break;
+		}
+		case 5: // sum gate
+		{
+			auto tmp = beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half];
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 12: // exp sum gate
+		{
+			auto tmp = beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half];
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 4: // direct relay gate
+		{
+			auto tmp = (beta_g_r0_fhalf[u & mask_fhalf] * beta_g_r0_shalf[u >> first_half] + beta_g_r1_fhalf[u & mask_fhalf] * beta_g_r1_shalf[u >> first_half]);
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 6: // NOT gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 7: // minus gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			intermediates0[i] = circuit_value[sumcheck_layer_id - 1][v] * tmp;
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 8: // XOR gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			auto tmp_V = tmp * circuit_value[sumcheck_layer_id - 1][v];
+			auto tmp_2V = tmp_V + tmp_V;
+			intermediates0[i] = tmp_V;
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 13: // bit-test gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			auto tmp_V = tmp * circuit_value[sumcheck_layer_id - 1][v];
+			intermediates0[i] = tmp_V;
+			intermediates1[i] = tmp;
+			break;
+		}
+		case 9: // NAAB gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			auto tmpV = tmp * circuit_value[sumcheck_layer_id - 1][v];
+			intermediates1[i] = tmpV;
+			break;
+		}
+		case 10: // relay gate
+		{
+			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			intermediates0[i] = tmp;
+			break;
+		}
+		case 14: // custom comb
+		{
+			auto tmp = beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half];
+			intermediates1[i] = tmp;
+			break;
+		}
+		default:
+		{
+			printf("Warning Unknown gate %d\n", C->circuit[sumcheck_layer_id].gates[i].ty);
+			break;
+		}
 		}
 	}
 
-	for(int i = 0; i < (1 << length_g); ++i)
+	for (int i = 0; i < (1 << length_g); ++i)
 	{
 		int u, v;
-		u = C -> circuit[sumcheck_layer_id].gates[i].u;
-		v = C -> circuit[sumcheck_layer_id].gates[i].v;
-		switch(C -> circuit[sumcheck_layer_id].gates[i].ty)
+		u = C->circuit[sumcheck_layer_id].gates[i].u;
+		v = C->circuit[sumcheck_layer_id].gates[i].v;
+		switch (C->circuit[sumcheck_layer_id].gates[i].ty)
 		{
-			case 0: //add gate
+		case 0: // add gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				addV_array[u].b = (addV_array[u].b + intermediates0[i]);
-				add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 2:
+			addV_array[u].b = (addV_array[u].b + intermediates0[i]);
+			add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i]);
+			break;
+		}
+		case 2:
+		{
+			break;
+		}
+		case 1: // mult gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 1: //mult gate
+			add_mult_sum[u].b = (add_mult_sum[u].b + intermediates0[i]);
+			break;
+		}
+		case 5: // sum gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				add_mult_sum[u].b = (add_mult_sum[u].b + intermediates0[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 5: //sum gate
+			for (int j = u; j < v; ++j)
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				for(int j = u; j < v; ++j)
-				{
-					add_mult_sum[j].b = (add_mult_sum[j].b + intermediates1[i]);
-				}
-				break;
+				add_mult_sum[j].b = (add_mult_sum[j].b + intermediates1[i]);
 			}
-			case 12: //exp sum gate
+			break;
+		}
+		case 12: // exp sum gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				auto tmp = intermediates1[i];
-				for(int j = u; j <= v; ++j)
-				{
-					add_mult_sum[j].b = (add_mult_sum[j].b + tmp);
-					tmp = tmp + tmp;
-				}
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 14:
+			auto tmp = intermediates1[i];
+			for (int j = u; j <= v; ++j)
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				auto tmp = intermediates1[i];
-				for(int j = 0; j < C -> circuit[sumcheck_layer_id].gates[i].parameter_length; ++j)
-				{
-					int src = C -> circuit[sumcheck_layer_id].gates[i].src[j];
-					prime_field::field_element weight = C -> circuit[sumcheck_layer_id].gates[i].weight[j];
-					add_mult_sum[src].b = add_mult_sum[src].b + weight * tmp;
-				}
-				break;
+				add_mult_sum[j].b = (add_mult_sum[j].b + tmp);
+				tmp = tmp + tmp;
 			}
-			case 4: //direct relay gate
+			break;
+		}
+		case 14:
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 6: //NOT gate
+			auto tmp = intermediates1[i];
+			for (int j = 0; j < C->circuit[sumcheck_layer_id].gates[i].parameter_length; ++j)
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				add_mult_sum[u].b = (add_mult_sum[u].b - intermediates1[i]);
-				addV_array[u].b = (addV_array[u].b + intermediates1[i]);
-				break;
+				int src = C->circuit[sumcheck_layer_id].gates[i].src[j];
+				prime_field::field_element weight = C->circuit[sumcheck_layer_id].gates[i].weight[j];
+				add_mult_sum[src].b = add_mult_sum[src].b + weight * tmp;
 			}
-			case 7: //minus gate
+			break;
+		}
+		case 4: // direct relay gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				addV_array[u].b = (addV_array[u].b - (intermediates0[i]));
-				add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 8: //XOR gate
+			add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i]);
+			break;
+		}
+		case 6: // NOT gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				addV_array[u].b = (addV_array[u].b + intermediates0[i]);
-				add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i] - intermediates0[i] - intermediates0[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 13: //bit-test gate
+			add_mult_sum[u].b = (add_mult_sum[u].b - intermediates1[i]);
+			addV_array[u].b = (addV_array[u].b + intermediates1[i]);
+			break;
+		}
+		case 7: // minus gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				add_mult_sum[u].b = (add_mult_sum[u].b - intermediates0[i] + intermediates1[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 9: //NAAB gate
+			addV_array[u].b = (addV_array[u].b - (intermediates0[i]));
+			add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i]);
+			break;
+		}
+		case 8: // XOR gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				addV_array[u].b = (addV_array[u].b + intermediates1[i]);
-				add_mult_sum[u].b = (add_mult_sum[u].b - intermediates1[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			case 10: //relay gate
+			addV_array[u].b = (addV_array[u].b + intermediates0[i]);
+			add_mult_sum[u].b = (add_mult_sum[u].b + intermediates1[i] - intermediates0[i] - intermediates0[i]);
+			break;
+		}
+		case 13: // bit-test gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				if(!gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty])
-				{
-					//printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-					gate_meet[C -> circuit[sumcheck_layer_id].gates[i].ty] = true;
-				}
-				add_mult_sum[u].b = (add_mult_sum[u].b + intermediates0[i]);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
-			default:
+			add_mult_sum[u].b = (add_mult_sum[u].b - intermediates0[i] + intermediates1[i]);
+			break;
+		}
+		case 9: // NAAB gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
 			{
-				printf("Warning Unknown gate %d\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
-				break;
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
 			}
+			addV_array[u].b = (addV_array[u].b + intermediates1[i]);
+			add_mult_sum[u].b = (add_mult_sum[u].b - intermediates1[i]);
+			break;
+		}
+		case 10: // relay gate
+		{
+			if (!gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty])
+			{
+				// printf("first meet %d gate\n", C -> circuit[sumcheck_layer_id].gates[i].ty);
+				gate_meet[C->circuit[sumcheck_layer_id].gates[i].ty] = true;
+			}
+			add_mult_sum[u].b = (add_mult_sum[u].b + intermediates0[i]);
+			break;
+		}
+		default:
+		{
+			printf("Warning Unknown gate %d\n", C->circuit[sumcheck_layer_id].gates[i].ty);
+			break;
+		}
 		}
 	}
 
 	delete[] intermediates0;
 	delete[] intermediates1;
-	
+
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
 	total_time += time_span.count();
 }
 
-
-//new zk function
+// new zk function
 quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element previous_random, int current_bit)
-{	
+{
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
 	quadratic_poly ret = quadratic_poly(prime_field::field_element(0), prime_field::field_element(0), prime_field::field_element(0));
-	
-	#pragma omp parallel for
-	for(int i = 0; i < (total_uv >> 1); ++i)
+
+#pragma omp parallel for
+	for (int i = 0; i < (total_uv >> 1); ++i)
 	{
 		prime_field::field_element zero_value, one_value;
 		int g_zero = i << 1, g_one = i << 1 | 1;
-		if(current_bit == 0)
+		if (current_bit == 0)
 		{
 			V_mult_add_new[i].b = V_mult_add[g_zero].b;
 			V_mult_add_new[i].a = V_mult_add[g_one].b - V_mult_add_new[i].b;
@@ -593,7 +608,6 @@ quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element prev
 
 			add_mult_sum_new[i].b = add_mult_sum[g_zero].b;
 			add_mult_sum_new[i].a = add_mult_sum[g_one].b - add_mult_sum_new[i].b;
-
 		}
 		else
 		{
@@ -605,17 +619,16 @@ quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element prev
 
 			add_mult_sum_new[i].b = (add_mult_sum[g_zero].a * previous_random + add_mult_sum[g_zero].b);
 			add_mult_sum_new[i].a = (add_mult_sum[g_one].a * previous_random + add_mult_sum[g_one].b - add_mult_sum_new[i].b);
-
 		}
 	}
 	std::swap(V_mult_add, V_mult_add_new);
 	std::swap(addV_array, addV_array_new);
 	std::swap(add_mult_sum, add_mult_sum_new);
-	
-	//parallel addition tree
 
-	#pragma omp parallel for
-	for(int i = 0; i < (total_uv >> 1); ++i)
+	// parallel addition tree
+
+#pragma omp parallel for
+	for (int i = 0; i < (total_uv >> 1); ++i)
 	{
 		rets_prev[i].a = add_mult_sum[i].a * V_mult_add[i].a;
 		rets_prev[i].b = add_mult_sum[i].a * V_mult_add[i].b + add_mult_sum[i].b * V_mult_add[i].a + addV_array[i].a;
@@ -623,14 +636,14 @@ quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element prev
 	}
 
 	const int tot = total_uv >> 1;
-	for(int i = 1; (1 << i) <= (total_uv >> 1); ++i)
+	for (int i = 1; (1 << i) <= (total_uv >> 1); ++i)
 	{
-		#pragma omp parallel for
-		for(int j = 0; j < (tot >> i); ++j)
+#pragma omp parallel for
+		for (int j = 0; j < (tot >> i); ++j)
 		{
 			rets_cur[j] = rets_prev[j * 2] + rets_prev[j * 2 + 1];
 		}
-		#pragma omp barrier
+#pragma omp barrier
 		std::swap(rets_prev, rets_cur);
 	}
 	ret = rets_prev[0];
@@ -643,30 +656,28 @@ quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element prev
 	return ret;
 }
 
-
-
-void zk_prover::sumcheck_phase2_init(prime_field::field_element previous_random, const prime_field::field_element* r_u, const prime_field::field_element* one_minus_r_u)
+void zk_prover::sumcheck_phase2_init(prime_field::field_element previous_random, const prime_field::field_element *r_u, const prime_field::field_element *one_minus_r_u)
 {
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
-	
+
 	v_u = V_mult_add[0].eval(previous_random);
 
 	int first_half = length_u >> 1, second_half = length_u - first_half;
 
 	beta_u_fhalf[0] = prime_field::field_element(1);
 	beta_u_shalf[0] = prime_field::field_element(1);
-	for(int i = 0; i < first_half; ++i)
+	for (int i = 0; i < first_half; ++i)
 	{
-		for(int j = 0; j < (1 << i); ++j)
+		for (int j = 0; j < (1 << i); ++j)
 		{
 			beta_u_fhalf[j | (1 << i)] = beta_u_fhalf[j] * r_u[i];
 			beta_u_fhalf[j] = beta_u_fhalf[j] * one_minus_r_u[i];
 		}
 	}
 
-	for(int i = 0; i < second_half; ++i)
+	for (int i = 0; i < second_half; ++i)
 	{
-		for(int j = 0; j < (1 << i); ++j)
+		for (int j = 0; j < (1 << i); ++j)
 		{
 			beta_u_shalf[j | (1 << i)] = beta_u_shalf[j] * r_u[i + first_half];
 			beta_u_shalf[j] = beta_u_shalf[j] * one_minus_r_u[i + first_half];
@@ -676,11 +687,11 @@ void zk_prover::sumcheck_phase2_init(prime_field::field_element previous_random,
 	int mask_fhalf = (1 << first_half) - 1;
 	int first_g_half = (length_g >> 1);
 	int mask_g_fhalf = (1 << (length_g >> 1)) - 1;
-	
-	total_uv = (1 << C -> circuit[sumcheck_layer_id - 1].bit_length);
-	int total_g = (1 << C -> circuit[sumcheck_layer_id].bit_length);
+
+	total_uv = (1 << C->circuit[sumcheck_layer_id - 1].bit_length);
+	int total_g = (1 << C->circuit[sumcheck_layer_id].bit_length);
 	prime_field::field_element zero = prime_field::field_element(0);
-	for(int i = 0; i < total_uv; ++i)
+	for (int i = 0; i < total_uv; ++i)
 	{
 		add_mult_sum[i].a = zero;
 		add_mult_sum[i].b = zero;
@@ -693,230 +704,218 @@ void zk_prover::sumcheck_phase2_init(prime_field::field_element previous_random,
 	prime_field::field_element *intermediates1 = new prime_field::field_element[total_g];
 	prime_field::field_element *intermediates2 = new prime_field::field_element[total_g];
 
-	#pragma omp parallel for
-	for(int i = 0; i < total_g; ++i)
+#pragma omp parallel for
+	for (int i = 0; i < total_g; ++i)
 	{
-		int ty = C -> circuit[sumcheck_layer_id].gates[i].ty;
-		int u = C -> circuit[sumcheck_layer_id].gates[i].u;
-		int v = C -> circuit[sumcheck_layer_id].gates[i].v;
-		switch(ty)
+		int ty = C->circuit[sumcheck_layer_id].gates[i].ty;
+		int u = C->circuit[sumcheck_layer_id].gates[i].u;
+		int v = C->circuit[sumcheck_layer_id].gates[i].v;
+		switch (ty)
 		{
-			case 1: //mult gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				intermediates0[i] = tmp_g * tmp_u * v_u;
-				break;
-			}
-			case 0: //add gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp_g_u = tmp_g * tmp_u;
-				intermediates0[i] = tmp_g_u;
-				intermediates1[i] = tmp_g_u * v_u;
-				break;
-			}
-			case 2:
-			{
-				break;
-			}
-			case 4:
-			{
-				break;
-			}
-			case 5: //sum gate
-			{
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp_g_vu = tmp_g * v_u;
-				intermediates0[i] = tmp_g_vu;
-				break;
-			}
-			case 12: //exp sum gate
-			{
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp_g_vu = tmp_g * v_u;
-				intermediates0[i] = tmp_g_vu;
-				break;
-			}
-			case 14: //custom comb gate
-			{
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp_g_vu = tmp_g * v_u;
-				intermediates0[i] = tmp_g_vu;
-				break;
-			}
+		case 1: // mult gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			intermediates0[i] = tmp_g * tmp_u * v_u;
+			break;
+		}
+		case 0: // add gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp_g_u = tmp_g * tmp_u;
+			intermediates0[i] = tmp_g_u;
+			intermediates1[i] = tmp_g_u * v_u;
+			break;
+		}
+		case 2:
+		{
+			break;
+		}
+		case 4:
+		{
+			break;
+		}
+		case 5: // sum gate
+		{
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp_g_vu = tmp_g * v_u;
+			intermediates0[i] = tmp_g_vu;
+			break;
+		}
+		case 12: // exp sum gate
+		{
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp_g_vu = tmp_g * v_u;
+			intermediates0[i] = tmp_g_vu;
+			break;
+		}
+		case 14: // custom comb gate
+		{
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp_g_vu = tmp_g * v_u;
+			intermediates0[i] = tmp_g_vu;
+			break;
+		}
 
-			case 6: //not gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp_g_u = tmp_g * tmp_u;
-				intermediates0[i] = tmp_g_u - tmp_g_u * v_u;
-				break;
-			}
-			case 7: //minus gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp = tmp_g * tmp_u;
-				intermediates0[i] = tmp;
-				intermediates1[i] = tmp * v_u;
-				break;
-			}
-			case 8: //xor gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp = tmp_g * tmp_u;
-				auto tmp_v_u = tmp * v_u;
-				intermediates0[i] = tmp - tmp_v_u - tmp_v_u;
-				intermediates1[i] = tmp_v_u;
-				break;
-			}
-			case 13: //bit-test gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp = tmp_g * tmp_u;
-				auto tmp_v_u = tmp * v_u;
-				intermediates0[i] = tmp_v_u;
-				break;
-			}
-			case 9: //NAAB gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp = tmp_g * tmp_u;
-				intermediates0[i] = tmp - v_u * tmp;
-				break;
-			}
-			case 10: //relay gate
-			{
-				auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
-				auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] 
-								+ beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
-				auto tmp = tmp_g * tmp_u;
-				intermediates0[i] = tmp * v_u;
-				break;
-			}
-			default:
-			{
-				printf("Warning Unknown gate %d\n", ty);
-				break;
-			}
+		case 6: // not gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp_g_u = tmp_g * tmp_u;
+			intermediates0[i] = tmp_g_u - tmp_g_u * v_u;
+			break;
+		}
+		case 7: // minus gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp = tmp_g * tmp_u;
+			intermediates0[i] = tmp;
+			intermediates1[i] = tmp * v_u;
+			break;
+		}
+		case 8: // xor gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp = tmp_g * tmp_u;
+			auto tmp_v_u = tmp * v_u;
+			intermediates0[i] = tmp - tmp_v_u - tmp_v_u;
+			intermediates1[i] = tmp_v_u;
+			break;
+		}
+		case 13: // bit-test gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp = tmp_g * tmp_u;
+			auto tmp_v_u = tmp * v_u;
+			intermediates0[i] = tmp_v_u;
+			break;
+		}
+		case 9: // NAAB gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp = tmp_g * tmp_u;
+			intermediates0[i] = tmp - v_u * tmp;
+			break;
+		}
+		case 10: // relay gate
+		{
+			auto tmp_u = beta_u_fhalf[u & mask_fhalf] * beta_u_shalf[u >> first_half];
+			auto tmp_g = (beta_g_r0_fhalf[i & mask_g_fhalf] * beta_g_r0_shalf[i >> first_g_half] + beta_g_r1_fhalf[i & mask_g_fhalf] * beta_g_r1_shalf[i >> first_g_half]);
+			auto tmp = tmp_g * tmp_u;
+			intermediates0[i] = tmp * v_u;
+			break;
+		}
+		default:
+		{
+			printf("Warning Unknown gate %d\n", ty);
+			break;
+		}
 		}
 	}
-	
-	
-	for(int i = 0; i < total_g; ++i)
+
+	for (int i = 0; i < total_g; ++i)
 	{
-		int ty = C -> circuit[sumcheck_layer_id].gates[i].ty;
-		int u = C -> circuit[sumcheck_layer_id].gates[i].u;
-		int v = C -> circuit[sumcheck_layer_id].gates[i].v;
-		switch(ty)
+		int ty = C->circuit[sumcheck_layer_id].gates[i].ty;
+		int u = C->circuit[sumcheck_layer_id].gates[i].u;
+		int v = C->circuit[sumcheck_layer_id].gates[i].v;
+		switch (ty)
 		{
-			case 1: //mult gate
+		case 1: // mult gate
+		{
+			add_mult_sum[v].b = add_mult_sum[v].b + intermediates0[i];
+			break;
+		}
+		case 0: // add gate
+		{
+			add_mult_sum[v].b = (add_mult_sum[v].b + intermediates0[i]);
+			addV_array[v].b = (intermediates1[i] + addV_array[v].b);
+			break;
+		}
+		case 2:
+		{
+			break;
+		}
+		case 4:
+		{
+			break;
+		}
+		case 5: // sum gate
+		{
+			for (int j = u; j < v; ++j)
 			{
-				add_mult_sum[v].b = add_mult_sum[v].b + intermediates0[i];
-				break;
+				auto tmp_u = beta_u_fhalf[j & mask_fhalf] * beta_u_shalf[j >> first_half];
+				addV_array[0].b = (addV_array[0].b + intermediates0[i] * tmp_u);
 			}
-			case 0: //add gate
+			break;
+		}
+		case 12: // exp sum gate
+		{
+			auto tmp_g_vu = intermediates0[i];
+
+			for (int j = u; j <= v; ++j)
 			{
-				add_mult_sum[v].b = (add_mult_sum[v].b + intermediates0[i]);
-				addV_array[v].b = (intermediates1[i] + addV_array[v].b);
-				break;
+				auto tmp_u = beta_u_fhalf[j & mask_fhalf] * beta_u_shalf[j >> first_half];
+				addV_array[0].b = (addV_array[0].b + tmp_g_vu * tmp_u);
+				tmp_g_vu = tmp_g_vu + tmp_g_vu;
 			}
-			case 2:
+			break;
+		}
+		case 14: // custom comb gate
+		{
+			auto tmp_g_vu = intermediates0[i];
+
+			for (int j = 0; j < C->circuit[sumcheck_layer_id].gates[i].parameter_length; ++j)
 			{
-				break;
+				long long src = C->circuit[sumcheck_layer_id].gates[i].src[j];
+				auto tmp_u = beta_u_fhalf[src & mask_fhalf] * beta_u_shalf[src >> first_half];
+				prime_field::field_element weight = C->circuit[sumcheck_layer_id].gates[i].weight[j];
+				addV_array[0].b = (addV_array[0].b + tmp_g_vu * tmp_u * weight);
 			}
-			case 4:
-			{
-				break;
-			}
-			case 5: //sum gate
-			{
-				for(int j = u; j < v; ++j)
-				{
-					auto tmp_u = beta_u_fhalf[j & mask_fhalf] * beta_u_shalf[j >> first_half];
-					addV_array[0].b = (addV_array[0].b + intermediates0[i] * tmp_u);
-				}
-				break;
-			}
-			case 12: //exp sum gate
-			{
-				auto tmp_g_vu = intermediates0[i];
-				
-				for(int j = u; j <= v; ++j)
-				{
-					auto tmp_u = beta_u_fhalf[j & mask_fhalf] * beta_u_shalf[j >> first_half];
-					addV_array[0].b = (addV_array[0].b + tmp_g_vu * tmp_u);
-					tmp_g_vu = tmp_g_vu + tmp_g_vu;
-				}
-				break;
-			}
-			case 14: //custom comb gate
-			{
-				auto tmp_g_vu = intermediates0[i];
-				
-				for(int j = 0; j < C -> circuit[sumcheck_layer_id].gates[i].parameter_length; ++j)
-				{
-					long long src = C -> circuit[sumcheck_layer_id].gates[i].src[j];
-					auto tmp_u = beta_u_fhalf[src & mask_fhalf] * beta_u_shalf[src >> first_half];
-					prime_field::field_element weight = C -> circuit[sumcheck_layer_id].gates[i].weight[j];
-					addV_array[0].b = (addV_array[0].b + tmp_g_vu * tmp_u * weight);
-				}
-				break;
-			}
-			case 6: //not gate
-			{
-				addV_array[v].b = (addV_array[v].b + intermediates0[i]);
-				break;
-			}
-			case 7: //minus gate
-			{
-				add_mult_sum[v].b = (add_mult_sum[v].b - intermediates0[i]);
-				addV_array[v].b = (intermediates1[i] + addV_array[v].b);
-				break;
-			}
-			case 8: //xor gate
-			{
-				add_mult_sum[v].b = (add_mult_sum[v].b + intermediates0[i]);
-				addV_array[v].b = (addV_array[v].b + intermediates1[i]);
-				break;
-			}
-			case 13: //bit-test gate
-			{
-				add_mult_sum[v].b = (add_mult_sum[v].b - intermediates0[i]);
-				addV_array[v].b = (addV_array[v].b + intermediates0[i]);
-				break;
-			}
-			case 9: //NAAB gate
-			{
-				add_mult_sum[v].b = (add_mult_sum[v].b + intermediates0[i]);
-				break;
-			}
-			case 10: //relay gate
-			{
-				addV_array[v].b = (addV_array[v].b + intermediates0[i]);
-				break;
-			}
-			default:
-			{
-				printf("Warning Unknown gate %d\n", ty);
-				break;
-			}
+			break;
+		}
+		case 6: // not gate
+		{
+			addV_array[v].b = (addV_array[v].b + intermediates0[i]);
+			break;
+		}
+		case 7: // minus gate
+		{
+			add_mult_sum[v].b = (add_mult_sum[v].b - intermediates0[i]);
+			addV_array[v].b = (intermediates1[i] + addV_array[v].b);
+			break;
+		}
+		case 8: // xor gate
+		{
+			add_mult_sum[v].b = (add_mult_sum[v].b + intermediates0[i]);
+			addV_array[v].b = (addV_array[v].b + intermediates1[i]);
+			break;
+		}
+		case 13: // bit-test gate
+		{
+			add_mult_sum[v].b = (add_mult_sum[v].b - intermediates0[i]);
+			addV_array[v].b = (addV_array[v].b + intermediates0[i]);
+			break;
+		}
+		case 9: // NAAB gate
+		{
+			add_mult_sum[v].b = (add_mult_sum[v].b + intermediates0[i]);
+			break;
+		}
+		case 10: // relay gate
+		{
+			addV_array[v].b = (addV_array[v].b + intermediates0[i]);
+			break;
+		}
+		default:
+		{
+			printf("Warning Unknown gate %d\n", ty);
+			break;
+		}
 		}
 	}
 
@@ -929,18 +928,17 @@ void zk_prover::sumcheck_phase2_init(prime_field::field_element previous_random,
 	total_time += time_span.count();
 }
 
-
-//new zk function
+// new zk function
 
 quadratic_poly zk_prover::sumcheck_phase2_update(prime_field::field_element previous_random, int current_bit)
 {
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
 	quadratic_poly ret = quadratic_poly(prime_field::field_element(0), prime_field::field_element(0), prime_field::field_element(0));
-	#pragma omp parallel for
-	for(int i = 0; i < (total_uv >> 1); ++i)
+#pragma omp parallel for
+	for (int i = 0; i < (total_uv >> 1); ++i)
 	{
 		int g_zero = i << 1, g_one = i << 1 | 1;
-		if(current_bit == 0)
+		if (current_bit == 0)
 		{
 			V_mult_add_new[i].b = V_mult_add[g_zero].b;
 			V_mult_add_new[i].a = V_mult_add[g_one].b - V_mult_add_new[i].b;
@@ -953,7 +951,7 @@ quadratic_poly zk_prover::sumcheck_phase2_update(prime_field::field_element prev
 		}
 		else
 		{
-			
+
 			V_mult_add_new[i].b = (V_mult_add[g_zero].a * previous_random + V_mult_add[g_zero].b);
 			V_mult_add_new[i].a = (V_mult_add[g_one].a * previous_random + V_mult_add[g_one].b - V_mult_add_new[i].b);
 
@@ -972,11 +970,11 @@ quadratic_poly zk_prover::sumcheck_phase2_update(prime_field::field_element prev
 	std::swap(V_mult_add, V_mult_add_new);
 	std::swap(addV_array, addV_array_new);
 	std::swap(add_mult_sum, add_mult_sum_new);
-	
-	//parallel addition tree
 
-	#pragma omp parallel for
-	for(int i = 0; i < (total_uv >> 1); ++i)
+	// parallel addition tree
+
+#pragma omp parallel for
+	for (int i = 0; i < (total_uv >> 1); ++i)
 	{
 		rets_prev[i].a = add_mult_sum[i].a * V_mult_add[i].a;
 		rets_prev[i].b = add_mult_sum[i].a * V_mult_add[i].b + add_mult_sum[i].b * V_mult_add[i].a + addV_array[i].a;
@@ -984,14 +982,14 @@ quadratic_poly zk_prover::sumcheck_phase2_update(prime_field::field_element prev
 	}
 
 	const int tot = total_uv >> 1;
-	for(int i = 1; (1 << i) <= (total_uv >> 1); ++i)
+	for (int i = 1; (1 << i) <= (total_uv >> 1); ++i)
 	{
-		#pragma omp parallel for
-		for(int j = 0; j < (tot >> i); ++j)
+#pragma omp parallel for
+		for (int j = 0; j < (tot >> i); ++j)
 		{
 			rets_cur[j] = rets_prev[j * 2] + rets_prev[j * 2 + 1];
 		}
-		#pragma omp barrier
+#pragma omp barrier
 		std::swap(rets_prev, rets_cur);
 	}
 	ret = rets_prev[0];
@@ -1004,7 +1002,6 @@ quadratic_poly zk_prover::sumcheck_phase2_update(prime_field::field_element prev
 	return ret;
 }
 
-
 std::pair<prime_field::field_element, prime_field::field_element> zk_prover::sumcheck_finalize(prime_field::field_element previous_random)
 {
 	v_v = V_mult_add[0].eval(previous_random);
@@ -1012,5 +1009,5 @@ std::pair<prime_field::field_element, prime_field::field_element> zk_prover::sum
 }
 void zk_prover::proof_init()
 {
-	//todo
+	// todo
 }
