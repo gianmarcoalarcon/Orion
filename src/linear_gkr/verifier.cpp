@@ -1031,7 +1031,7 @@ bool zk_verifier::verify(const char *output_path)
 
 	prime_field::field_element alpha, beta;
 	alpha = prime_field::field_element(1);
-	printf("	alpha.real:%lld,  alpha.img, %lld\n", alpha.real, alpha.img);
+	// printf("	alpha.real:%lld,  alpha.img, %lld\n", alpha.real, alpha.img);
 
 	beta = prime_field::field_element(0);
 	random_oracle oracle;
@@ -1049,10 +1049,10 @@ bool zk_verifier::verify(const char *output_path)
 
 	std::chrono::high_resolution_clock::time_point t_a = std::chrono::high_resolution_clock::now();
 	std::cerr << "Calc V_output(r)" << std::endl;
-	printf("	capacity:%d\n", C.circuit[C.total_depth - 1].bit_length);
+	// printf("	capacity:%d\n", C.circuit[C.total_depth - 1].bit_length);
 
 	prime_field::field_element a_0 = p->V_res(one_minus_r_0, r_0, result, C.circuit[C.total_depth - 1].bit_length, (1 << (C.circuit[C.total_depth - 1].bit_length)));
-	printf("	a_0.real:%lld,  a_0.img, %lld\n", a_0.real, a_0.img);
+	// printf("	a_0.real:%lld,  a_0.img, %lld\n", a_0.real, a_0.img);
 
 	std::chrono::high_resolution_clock::time_point t_b = std::chrono::high_resolution_clock::now();
 

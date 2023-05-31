@@ -154,10 +154,10 @@ prime_field::field_element *zk_prover::evaluate()
 				for (int k = 0; k < C->circuit[i].gates[g].parameter_length; ++k)
 				{
 					prime_field::field_element weight = C->circuit[i].gates[g].weight[k];
-					if (k < 3 && g < 130)
-					{
-						printf("\ti:%d, g:%d,	weight.real:%lld, img:%lld\n", i, g, weight.real, weight.img);
-					}
+					// if (k < 3 && g < 130)
+					// {
+					// 	printf("\ti:%d, g:%d,	weight.real:%lld, img:%lld\n", i, g, weight.real, weight.img);
+					// }
 					long long idx = C->circuit[i].gates[g].src[k];
 					circuit_value[i][g] = circuit_value[i][g] + circuit_value[i - 1][idx] * weight;
 				}
@@ -166,25 +166,25 @@ prime_field::field_element *zk_prover::evaluate()
 			{
 				assert(false);
 			}
-			if (i == 2 && g < 130)
-			{
+			// if (i == 2 && g < 130)
+			// {
 
-				printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
-			}
+			// 	printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
+			// }
 		}
 	}
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
-	std::cerr << "total evaluation time: " << time_span.count() << " seconds." << std::endl;
-	// FILE *out = fopen("./text.txt", "w");
-	// for (int i = 0; i < (1 << C->circuit[C->total_depth - 1].bit_length); ++i)
-	// {
-	// 	fprintf(out, "%lld %lld\n", circuit_value[C->total_depth - 1][i].real, circuit_value[C->total_depth - 1][i].img);
-	// 	printf("	result[%d].real:%lld,  result[].img %lld\n", i, circuit_value[C->total_depth - 1][i].real, circuit_value[C->total_depth - 1][i].img);
-	// }
-	// fclose(out);
+	// std::cerr << "total evaluation time: " << time_span.count() << " seconds." << std::endl;
+	//  FILE *out = fopen("./text.txt", "w");
+	//  for (int i = 0; i < (1 << C->circuit[C->total_depth - 1].bit_length); ++i)
+	//  {
+	//  	fprintf(out, "%lld %lld\n", circuit_value[C->total_depth - 1][i].real, circuit_value[C->total_depth - 1][i].img);
+	//  	printf("	result[%d].real:%lld,  result[].img %lld\n", i, circuit_value[C->total_depth - 1][i].real, circuit_value[C->total_depth - 1][i].img);
+	//  }
+	//  fclose(out);
 
 	return circuit_value[C->total_depth - 1];
 }
@@ -192,13 +192,13 @@ prime_field::field_element *zk_prover::evaluate()
 void zk_prover::get_witness(prime_field::field_element *inputs, int N)
 {
 	circuit_value[0] = new prime_field::field_element[(1 << C->circuit[0].bit_length)];
-	FILE *out = fopen("./witness.txt", "w");
+	// FILE *out = fopen("./witness.txt", "w");
 	for (int i = 0; i < N; ++i)
 	{
 		circuit_value[0][i] = inputs[i];
 		// fprintf(out, "%lld %lld\n", circuit_value[0][i].real, circuit_value[0][i].img);
 	}
-	fclose(out);
+	// fclose(out);
 }
 
 void zk_prover::sumcheck_init(int layer_id, int bit_length_g, int bit_length_u, int bit_length_v,
@@ -272,7 +272,7 @@ void zk_prover::sumcheck_phase1_init()
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
 	// mult init
 	total_uv = (1 << C->circuit[sumcheck_layer_id - 1].bit_length);
-	printf("	total_uv: %d\n", total_uv);
+	// printf("	total_uv: %d\n", total_uv);
 
 	prime_field::field_element zero = prime_field::field_element(0);
 	// printf("	circuit_value[][0].real:%lld,  circuit_value[][0].img, %lld\n", circuit_value[sumcheck_layer_id - 1][0].real, circuit_value[sumcheck_layer_id - 1][0].img);
