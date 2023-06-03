@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 	N = 1 << lg_N;
 
 	expander_init(N / column_size);
-	exit(0);
 	prime_field::field_element *coefs = new prime_field::field_element[N];
 	for (int i = 0; i < N; ++i)
 		coefs[i] = prime_field::random();
