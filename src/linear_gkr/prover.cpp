@@ -166,11 +166,11 @@ prime_field::field_element *zk_prover::evaluate()
 			{
 				assert(false);
 			}
-			// if (i == 2 && g < 130)
-			// {
+			if (i < 7)
+			{
 
-			// 	printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
-			// }
+				printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
+			}
 		}
 	}
 
