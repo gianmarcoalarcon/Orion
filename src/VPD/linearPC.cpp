@@ -346,7 +346,7 @@ std::pair<prime_field::field_element, bool> tensor_product_protocol(prime_field:
 	for (int i = 0; i < query_count; ++i)
 	{
 		q[i] = rand() % codeword_size[0];
-		// fprintf(out, "%lld\n", q[i]);
+		fprintf(out, "%lld\n", q[i]);
 	}
 	fclose(out);
 	// generate circuit

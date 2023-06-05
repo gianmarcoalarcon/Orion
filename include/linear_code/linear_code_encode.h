@@ -51,6 +51,8 @@ inline int encode(const prime_field::field_element *src, prime_field::field_elem
         prime_field::field_element &val = scratch[0][dep][n + i];
         for(int d = 0; d < D[dep].degree; ++d)
         {
+            //printf("D[%d].weight[%lld] %zu", dep, i, D[dep].weight[i].size());
+            //exit(0);
             long long target = D[dep].neighbor[i][d];
             scratch[0][dep][n + L + target] = scratch[0][dep][n + L + target] + val * D[dep].weight[i][d];
         }

@@ -2,6 +2,9 @@
 #include <chrono>
 #include "linear_code/linear_code_encode.h"
 #include "VPD/linearPC.h"
+#include <iostream>
+#include <fstream>
+
 #define timer_mark(x) auto x = std::chrono::high_resolution_clock::now()
 #define time_diff(start, end) (std::chrono::duration_cast<std::chrono::duration<double>>(end - start).count())
 int main(int argc, char *argv[])
@@ -12,8 +15,15 @@ int main(int argc, char *argv[])
 
 	expander_init(N / column_size);
 	prime_field::field_element *coefs = new prime_field::field_element[N];
-	for (int i = 0; i < N; ++i)
-		coefs[i] = prime_field::random();
+
+    std::ofstream outFile("coefs.txt");
+	for (int i = 0; i < N; ++i) {
+        coefs[i] = prime_field::random();
+        outFile << coefs[i].real << " " << coefs[i].img << std::endl;
+    }
+
+    outFile.close();
+    std::cout << "Coefs saved to coefs.txt" << std::endl;
 
 	timer_mark(commit_t0);
 	auto h = commit(coefs, N);
