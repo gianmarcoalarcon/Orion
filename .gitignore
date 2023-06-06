@@ -39,3 +39,4 @@ Makefile
 *.pws
 zk_proof
 gen
+linearPC
