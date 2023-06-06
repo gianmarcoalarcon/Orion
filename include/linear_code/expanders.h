@@ -1,5 +1,5 @@
 #pragma once
-
+#include <cstdio>
 #include "parameter.h"
 #include <vector>
 #include <linear_gkr/prime_field.h>
@@ -18,6 +18,7 @@ extern graph C[100], D[100];
 
 inline graph generate_random_expander(long long L, long long R, long long d)
 {
+	//printf("in C: L:%lld\n",L);
 	graph ret;
 	ret.degree = d;
 	ret.neighbor.resize(L);

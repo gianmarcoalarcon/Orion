@@ -1,5 +1,4 @@
 #!/bin/bash
-# Script to setup environment
+# Script to setup environment on linux
 sudo apt update
-sudo apt install -y cmake make git clang++-7 libgmp-dev g++ parallel
-sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-7 1000
+sudo apt install -y cmake make git clang libgmp-dev g++ parallel

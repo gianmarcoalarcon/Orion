@@ -72,7 +72,7 @@ prime_field::field_element *zk_prover::evaluate()
 	for (int i = 1; i < C->total_depth; ++i)
 	{
 		circuit_value[i] = new prime_field::field_element[(1 << C->circuit[i].bit_length)];
-		// printf("	1 << bit_length %d\n", 1 << C->circuit[i].bit_length);
+		printf("	1 << bit_length %d\n", 1 << C->circuit[i].bit_length);
 		for (int j = 0; j < (1 << C->circuit[i].bit_length); ++j)
 		{
 			int g, u, v, ty;
@@ -154,10 +154,10 @@ prime_field::field_element *zk_prover::evaluate()
 				for (int k = 0; k < C->circuit[i].gates[g].parameter_length; ++k)
 				{
 					prime_field::field_element weight = C->circuit[i].gates[g].weight[k];
-					 if (i==3 && g == 158)
-					 {
-					 	printf("\tu:%d, v:%d i:%d, g:%d,	weight.real:%lld, img:%lld\n", u, v, i, g, weight.real, weight.img);
-					 }
+					if (i == 3 || i == 4)
+					{
+						printf("\ti:%d, g:%d, k:%d, weight.real:%lld, img:%lld\n", i, g, k, weight.real, weight.img);
+					}
 					long long idx = C->circuit[i].gates[g].src[k];
 					circuit_value[i][g] = circuit_value[i][g] + circuit_value[i - 1][idx] * weight;
 				}
@@ -166,11 +166,11 @@ prime_field::field_element *zk_prover::evaluate()
 			{
 				assert(false);
 			}
-//			if (i < 7)
-//			{
-//
-//				printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
-//			}
+			// if (i < 7)
+			// {
+
+			// 	printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
+			// }
 		}
 	}
 
