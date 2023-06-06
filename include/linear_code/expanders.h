@@ -1,5 +1,5 @@
 #pragma once
-
+#include <cstdio>
 #include "parameter.h"
 #include <vector>
 #include <linear_gkr/prime_field.h>
@@ -18,6 +18,7 @@ extern graph C[100], D[100];
 
 inline graph generate_random_expander(long long L, long long R, long long d)
 {
+	//printf("in C: L:%lld\n",L);
 	graph ret;
 	ret.degree = d;
 	ret.neighbor.resize(L);
@@ -25,6 +26,7 @@ inline graph generate_random_expander(long long L, long long R, long long d)
 
 	ret.r_neighbor.resize(R);
 	ret.r_weight.resize(R);
+		//FILE *out2 = fopen("./c_0_weight.txt", "w");
 	for (long long i = 0; i < L; ++i)
 	{
 		ret.neighbor[i].resize(d);
@@ -37,8 +39,33 @@ inline graph generate_random_expander(long long L, long long R, long long d)
 			ret.r_neighbor[target].push_back(i);
 			ret.r_weight[target].push_back(weight);
 			ret.weight[i][j] = weight;
+			// if (L == 128) // for d_1... L==7
+			// {
+			// 	{
+			// 	fprintf(out2, "%lld %lld ", ret.weight[i][j].real, ret.weight[i][j].img);		
+			// 	}
+			// }
 		}
+		// if (L == 128) // for d_1... L==7
+		// {
+		// 	fprintf(out2, "\n");
+		// }
 	}
+// 		fclose(out2);
+// 	FILE *out4 = fopen("./c_0_r_weight.txt", "w");
+// 	if (L == 128) // for d_1... L==7
+// 	{
+// 		for (int i = 0; i < R; ++i)
+// 		{
+// 			for (int j = 0; j < ret.r_neighbor[i].size(); ++j)
+// 			{
+// 				fprintf(out4, "%lld %lld ", ret.r_weight[i][j].real, ret.r_weight[i][j].img);		
+// 			}
+// 			fprintf(out4, "\n");
+// 		}
+// 	}
+// 	fclose(out4);
+// exit(0);
 	ret.L = L;
 	ret.R = R;
 	return ret;

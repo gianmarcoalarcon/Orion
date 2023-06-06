@@ -342,13 +342,13 @@ std::pair<prime_field::field_element, bool> tensor_product_protocol(prime_field:
 
 	// verifier samples query
 	long long *q = new long long[query_count];
-	FILE *out = fopen("./q.txt", "w");
+	//FILE *out = fopen("./q.txt", "w");
 	for (int i = 0; i < query_count; ++i)
 	{
 		q[i] = rand() % codeword_size[0];
 		// fprintf(out, "%lld\n", q[i]);
 	}
-	fclose(out);
+	//fclose(out);
 	// generate circuit
 
 	generate_circuit(q, N / column_size, query_count, combined_message);
