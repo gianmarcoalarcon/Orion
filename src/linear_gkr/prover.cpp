@@ -72,7 +72,7 @@ prime_field::field_element *zk_prover::evaluate()
 	for (int i = 1; i < C->total_depth; ++i)
 	{
 		circuit_value[i] = new prime_field::field_element[(1 << C->circuit[i].bit_length)];
-		printf("	1 << bit_length %d\n", 1 << C->circuit[i].bit_length);
+		// printf("	1 << bit_length %d\n", 1 << C->circuit[i].bit_length);
 		for (int j = 0; j < (1 << C->circuit[i].bit_length); ++j)
 		{
 			int g, u, v, ty;
@@ -154,10 +154,10 @@ prime_field::field_element *zk_prover::evaluate()
 				for (int k = 0; k < C->circuit[i].gates[g].parameter_length; ++k)
 				{
 					prime_field::field_element weight = C->circuit[i].gates[g].weight[k];
-					if (i == 3 || i == 4)
-					{
-						printf("\ti:%d, g:%d, k:%d, weight.real:%lld, img:%lld\n", i, g, k, weight.real, weight.img);
-					}
+					// if (i == 3 || i == 4)
+					// {
+					// 	printf("\ti:%d, g:%d, k:%d, weight.real:%lld, img:%lld\n", i, g, k, weight.real, weight.img);
+					// }
 					long long idx = C->circuit[i].gates[g].src[k];
 					circuit_value[i][g] = circuit_value[i][g] + circuit_value[i - 1][idx] * weight;
 				}
@@ -166,7 +166,7 @@ prime_field::field_element *zk_prover::evaluate()
 			{
 				assert(false);
 			}
-			// if (i < 7)
+			// if (i > 4)
 			// {
 
 			// 	printf("ty:%d, u:%d,	circuit_value[%d][%d].real:%lld, img, %lld\n", ty, u, i, g, circuit_value[i][g].real, circuit_value[i][g].img);
@@ -327,7 +327,10 @@ void zk_prover::sumcheck_phase1_init()
 		int u, v;
 		u = C->circuit[sumcheck_layer_id].gates[i].u;
 		v = C->circuit[sumcheck_layer_id].gates[i].v;
-		switch (C->circuit[sumcheck_layer_id].gates[i].ty)
+		int ty = C->circuit[sumcheck_layer_id].gates[i].ty;
+		printf("i:%d, u:%d, v:%d, ty:%d\n", i, u, v, ty);
+
+		switch (ty)
 		{
 		case 0: // add gate
 		{
@@ -403,8 +406,15 @@ void zk_prover::sumcheck_phase1_init()
 		}
 		case 10: // relay gate
 		{
-			auto tmp = (beta_g_r0_fhalf[i & mask_fhalf] * beta_g_r0_shalf[i >> first_half] + beta_g_r1_fhalf[i & mask_fhalf] * beta_g_r1_shalf[i >> first_half]);
+			auto a = beta_g_r0_fhalf[i & mask_fhalf];
+			auto b = beta_g_r0_shalf[i >> first_half];
+			auto c = beta_g_r1_fhalf[i & mask_fhalf];
+			auto d = beta_g_r1_shalf[i >> first_half];
+			printf("a.real:%lld, b.real:%lld, c.real:%lld, d.real:%lld\n", a.real, b.real, c.real, d.real);
+			printf("a.img:%lld, b.img:%lld, c.img:%lld, d.img:%lld\n", a.img, b.img, c.img, d.img);
+			auto tmp = (a * b + c * d);
 			intermediates0[i] = tmp;
+			printf("tmp.real:%lld, img:%lld\n", tmp.real, tmp.img);
 			break;
 		}
 		case 14: // custom comb
@@ -419,8 +429,14 @@ void zk_prover::sumcheck_phase1_init()
 			break;
 		}
 		}
+		// printf("ty:%d, intermediates0[%d].real:%lld, img:%lld\n", ty, i, intermediates0[i].real, intermediates0[i].img);
 	}
 
+	// for (int i = 0; i < 350; i++)
+	// {
+	// 	printf("intermediates0[%d].real:%lld, img:%lld\n", i, intermediates0[i].real, intermediates0[i].img);
+	// }
+	exit(0);
 	for (int i = 0; i < (1 << length_g); ++i)
 	{
 		int u, v;
@@ -593,11 +609,14 @@ quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element prev
 	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
 	quadratic_poly ret = quadratic_poly(prime_field::field_element(0), prime_field::field_element(0), prime_field::field_element(0));
 
+	// printf("previous_random.real:%lld, img:%lld\n", previous_random.real, previous_random.img);
+	// printf("current_bit:%d\n", current_bit);
 #pragma omp parallel for
 	for (int i = 0; i < (total_uv >> 1); ++i)
 	{
 		prime_field::field_element zero_value, one_value;
 		int g_zero = i << 1, g_one = i << 1 | 1;
+		// printf("g_zero %d g_one %d\n", g_zero, g_one);
 		if (current_bit == 0)
 		{
 			V_mult_add_new[i].b = V_mult_add[g_zero].b;
@@ -606,7 +625,9 @@ quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element prev
 			addV_array_new[i].b = addV_array[g_zero].b;
 			addV_array_new[i].a = addV_array[g_one].b - addV_array_new[i].b;
 
+			printf("add_mult_sum[g_zero].b.real:%lld, img:%lld\n", add_mult_sum[g_zero].b.real, add_mult_sum[g_zero].b.img);
 			add_mult_sum_new[i].b = add_mult_sum[g_zero].b;
+			printf("add_mult_sum[g_one].b.real:%lld, img:%lld\n", add_mult_sum[g_one].b.real, add_mult_sum[g_one].b.img);
 			add_mult_sum_new[i].a = add_mult_sum[g_one].b - add_mult_sum_new[i].b;
 		}
 		else
@@ -624,6 +645,15 @@ quadratic_poly zk_prover::sumcheck_phase1_update(prime_field::field_element prev
 	std::swap(V_mult_add, V_mult_add_new);
 	std::swap(addV_array, addV_array_new);
 	std::swap(add_mult_sum, add_mult_sum_new);
+
+	printf("V_mult_add[0].a.real:%lld, img:%lld\n", V_mult_add[0].a.real, V_mult_add[0].a.img);
+	printf("V_mult_add[0].b.real:%lld, img:%lld\n", V_mult_add[0].b.real, V_mult_add[0].b.img);
+	printf("addV_array[0].a.real:%lld, img:%lld\n", addV_array[0].a.real, addV_array[0].a.img);
+	printf("addV_array[0].b.real:%lld, img:%lld\n", addV_array[0].b.real, addV_array[0].b.img);
+	printf("add_mult_sum_new[0].a.real:%lld, img:%lld\n", add_mult_sum_new[0].a.real, add_mult_sum_new[0].a.img);
+	printf("add_mult_sum_new[0].b.real:%lld, img:%lld\n", add_mult_sum_new[0].b.real, add_mult_sum_new[0].b.img);
+	printf("add_mult_sum[0].a.real:%lld, img:%lld\n", add_mult_sum[0].a.real, add_mult_sum[0].a.img);
+	printf("add_mult_sum[0].b.real:%lld, img:%lld\n", add_mult_sum[0].b.real, add_mult_sum[0].b.img);
 
 	// parallel addition tree
 

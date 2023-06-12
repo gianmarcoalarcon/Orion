@@ -1075,6 +1075,8 @@ bool zk_verifier::verify(const char *output_path)
 
 		auto r_u = generate_randomness(C.circuit[i - 1].bit_length);
 		auto r_v = generate_randomness(C.circuit[i - 1].bit_length);
+		// for (int j = 0; j < C.circuit[i - 1].bit_length; ++j)
+		// 	printf("%lld %lld\n", r_v[j].real, r_v[j].img);
 		direct_relay_value = alpha * direct_relay(i, r_0, r_u) + beta * direct_relay(i, r_1, r_u);
 		if (i == 1)
 		{
@@ -1100,8 +1102,16 @@ bool zk_verifier::verify(const char *output_path)
 		for (int j = 0; j < C.circuit[i - 1].bit_length; ++j)
 		{
 			quadratic_poly poly = p->sumcheck_phase1_update(previous_random, j);
+			exit(0);
+			// printf("poly.a.real:%lld, img:%lld\n", poly.a.real, poly.a.img);
+			// printf("poly.b.real:%lld, img:%lld\n", poly.b.real, poly.b.img);
+			// printf("poly.c.real:%lld, img:%lld\n", poly.c.real, poly.c.img);
+
 			proof_size += sizeof(quadratic_poly);
 			previous_random = r_u[j];
+			// printf("poly.eval(0).real:%lld, img:%lld\n", poly.eval(0).real, poly.eval(0).img);
+			// printf("poly.eval(1).real:%lld, img:%lld\n", poly.eval(1).real, poly.eval(1).img);
+			// printf("j:%d, i:%d, alpha_beta_sum.real:%lld, img, %lld\n", j, i, alpha_beta_sum.real, alpha_beta_sum.img);
 
 			if (poly.eval(0) + poly.eval(1) != alpha_beta_sum)
 			{
@@ -1114,6 +1124,8 @@ bool zk_verifier::verify(const char *output_path)
 			}
 			alpha_beta_sum = poly.eval(r_u[j]);
 		}
+
+		exit(0);
 
 		//	std::cerr << "Bound v start" << std::endl;
 		p->sumcheck_phase2_init(previous_random, r_u, one_minus_r_u);
