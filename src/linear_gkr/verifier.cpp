@@ -1102,9 +1102,16 @@ bool zk_verifier::verify(const char *output_path)
 		for (int j = 0; j < C.circuit[i - 1].bit_length; ++j)
 		{
 			quadratic_poly poly = p->sumcheck_phase1_update(previous_random, j);
+			exit(0);
+			// printf("poly.a.real:%lld, img:%lld\n", poly.a.real, poly.a.img);
+			// printf("poly.b.real:%lld, img:%lld\n", poly.b.real, poly.b.img);
+			// printf("poly.c.real:%lld, img:%lld\n", poly.c.real, poly.c.img);
+
 			proof_size += sizeof(quadratic_poly);
 			previous_random = r_u[j];
-			printf("j:%d, i:%d, alpha_beta_sum.real:%lld, img, %lld\n", j, i, alpha_beta_sum.real, alpha_beta_sum.img);
+			// printf("poly.eval(0).real:%lld, img:%lld\n", poly.eval(0).real, poly.eval(0).img);
+			// printf("poly.eval(1).real:%lld, img:%lld\n", poly.eval(1).real, poly.eval(1).img);
+			// printf("j:%d, i:%d, alpha_beta_sum.real:%lld, img, %lld\n", j, i, alpha_beta_sum.real, alpha_beta_sum.img);
 
 			if (poly.eval(0) + poly.eval(1) != alpha_beta_sum)
 			{
