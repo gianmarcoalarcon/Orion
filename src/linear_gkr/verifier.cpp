@@ -1102,7 +1102,6 @@ bool zk_verifier::verify(const char *output_path)
 		for (int j = 0; j < C.circuit[i - 1].bit_length; ++j)
 		{
 			quadratic_poly poly = p->sumcheck_phase1_update(previous_random, j);
-			exit(0);
 			// printf("poly.a.real:%lld, img:%lld\n", poly.a.real, poly.a.img);
 			// printf("poly.b.real:%lld, img:%lld\n", poly.b.real, poly.b.img);
 			// printf("poly.c.real:%lld, img:%lld\n", poly.c.real, poly.c.img);
@@ -1124,8 +1123,6 @@ bool zk_verifier::verify(const char *output_path)
 			}
 			alpha_beta_sum = poly.eval(r_u[j]);
 		}
-
-		exit(0);
 
 		//	std::cerr << "Bound v start" << std::endl;
 		p->sumcheck_phase2_init(previous_random, r_u, one_minus_r_u);
@@ -1230,7 +1227,13 @@ bool zk_verifier::verify(const char *output_path)
 	prime_field::field_element *public_array = public_array_prepare(r_0, one_minus_r_0, C.circuit[0].bit_length, q_eval_real);
 	// prime_field::field_element *public_array = public_array_prepare_generic(q_eval_real, C.circuit[0].bit_length);
 
-	bool input_0_verify = poly_ver.verify_poly_commitment(all_sum, C.circuit[0].bit_length, public_array, verification_time, proof_size, p->total_time, merkle_root_l, merkle_root_h);
+	// for (int i = 0; i < 130; ++i)
+	// {
+	// 	printf("public_array[%d].real:%lld, img:%lld\n", i, public_array[i].real, public_array[i].img);
+	// }
+
+	bool input_0_verify = poly_ver.verify_poly_commitment(all_sum, C.circuit[0].bit_length,
+																												public_array, verification_time, proof_size, p->total_time, merkle_root_l, merkle_root_h);
 	delete[] q_eval_real;
 	delete[] r_0;
 	delete[] r_1;
