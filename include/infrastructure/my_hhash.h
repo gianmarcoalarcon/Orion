@@ -6,6 +6,7 @@
 #include <immintrin.h>
 #include <wmmintrin.h>
 #include <cassert>
+#include <iomanip>
 #include "flo-shani-aesni/sha256/flo-shani.h"
 // #define USESHA3
 #ifdef USESHA3
@@ -19,6 +20,27 @@ class __hhash_digest
 {
 public:
 	__m128i h0, h1;
+
+     void print() {
+        alignas(16) unsigned char bytes[32];
+        _mm_store_si128((__m128i*)bytes, h0);
+        _mm_store_si128((__m128i*)(bytes + 16), h1);
+
+        // Print h0 and h1 in hexadecimal format
+        std::cout << "h0: ";
+        for (int i = 0; i < 16; i++)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(bytes[i]);
+        }
+        std::cout << std::endl;
+
+        std::cout << "h1: ";
+        for (int i = 16; i < 32; i++)
+        {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(bytes[i]);
+        }
+        std::cout << std::endl;
+    }
 };
 
 inline bool equals(const __hhash_digest &a, const __hhash_digest &b)

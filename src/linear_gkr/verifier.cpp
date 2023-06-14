@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include "linear_gkr/random_generator.h"
 #include "VPD/vpd_verifier.h"
 
@@ -1038,7 +1039,19 @@ bool zk_verifier::verify(const char *output_path)
 	// initial random value
 	prime_field::field_element *r_0 = generate_randomness(C.circuit[C.total_depth - 1].bit_length), *r_1 = generate_randomness(C.circuit[C.total_depth - 1].bit_length);
 	prime_field::field_element *one_minus_r_0, *one_minus_r_1;
-	one_minus_r_0 = new prime_field::field_element[C.circuit[C.total_depth - 1].bit_length];
+
+//    std::ofstream r_0_f("r_0.txt");
+//    std::ofstream r_1_f("r_1.txt");
+//
+//    for(int i = 0; i < C.circuit[C.total_depth - 1].bit_length; i++) {
+//        r_0_f << r_0[i].real << " " << r_0[i].img << std::endl;
+//        r_1_f << r_1[i].real << " " << r_1[i].img << std::endl;
+//    }
+//
+//    r_0_f.close();
+//    r_1_f.close();
+
+    one_minus_r_0 = new prime_field::field_element[C.circuit[C.total_depth - 1].bit_length];
 	one_minus_r_1 = new prime_field::field_element[C.circuit[C.total_depth - 1].bit_length];
 
 	for (int i = 0; i < (C.circuit[C.total_depth - 1].bit_length); ++i)

@@ -16,21 +16,23 @@ int main(int argc, char *argv[])
 	expander_init(N / column_size);
 	prime_field::field_element *coefs = new prime_field::field_element[N];
 
-    std::ofstream outFile("coefs.txt");
+    //std::ofstream outFile("coefs.txt");
 	for (int i = 0; i < N; ++i) {
         coefs[i] = prime_field::random();
-        outFile << coefs[i].real << " " << coefs[i].img << std::endl;
+        //outFile << coefs[i].real << " " << coefs[i].img << std::endl;
     }
 
-    outFile.close();
-    std::cout << "Coefs saved to coefs.txt" << std::endl;
+    //outFile.close();
+    //std::cout << "Coefs saved to coefs.txt" << std::endl;
 
 	timer_mark(commit_t0);
 	auto h = commit(coefs, N);
 	timer_mark(commit_t1);
 
 	timer_mark(open_t0);
-	auto result = open_and_verify(prime_field::random(), N, h);
+    prime_field::field_element r = prime_field::random();
+	auto result = open_and_verify(r, N, h);
+    printf("%llu %llu\n", r.real, r.img);
 	timer_mark(open_t1);
 	printf("Commit time %lf\n", time_diff(commit_t0, commit_t1));
 	printf("Open time %lf\n", time_diff(open_t0, open_t1));

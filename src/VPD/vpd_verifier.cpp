@@ -10,6 +10,13 @@ inline bool verify_merkle(__hhash_digest h, std::vector<__hhash_digest> merkle_p
 {
 	// print_hhash_digest(&h);
 	// print (merkle_path);
+    std::cout << "printing h: " << std::endl;
+    h.print();
+
+    for (int i =0; i < merkle_path.size(); i++) {
+        std::cout << i << std::endl;
+        merkle_path[i].print();
+    }
 
 	printf("len %d pow %d\n", len, pow);
 	for (int i = 0; i < value.size(); ++i)
