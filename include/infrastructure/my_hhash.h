@@ -6,6 +6,7 @@
 #include <immintrin.h>
 #include <wmmintrin.h>
 #include <cassert>
+#include <cstring>
 #include <iomanip>
 #include "flo-shani-aesni/sha256/flo-shani.h"
 // #define USESHA3
@@ -21,26 +22,15 @@ class __hhash_digest
 public:
 	__m128i h0, h1;
 
-     void print() {
-        alignas(16) unsigned char bytes[32];
-        _mm_store_si128((__m128i*)bytes, h0);
-        _mm_store_si128((__m128i*)(bytes + 16), h1);
+    void print_128() {
+        int64_t v64val[2];
+        memcpy(v64val, &h0, sizeof(v64val));
+        printf("h0: 0x%.16llx 0x%.16llx\n", v64val[1], v64val[0]);
 
-        // Print h0 and h1 in hexadecimal format
-        std::cout << "h0: ";
-        for (int i = 0; i < 16; i++)
-        {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(bytes[i]);
-        }
-        std::cout << std::endl;
-
-        std::cout << "h1: ";
-        for (int i = 16; i < 32; i++)
-        {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(bytes[i]);
-        }
-        std::cout << std::endl;
-    }
+        memset(v64val, 0, sizeof(v64val));
+        memcpy(v64val, &h1, sizeof(v64val));
+        printf("h1: 0x%.16llx 0x%.16llx\n", v64val[1], v64val[0]);
+     }
 };
 
 inline bool equals(const __hhash_digest &a, const __hhash_digest &b)

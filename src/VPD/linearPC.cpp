@@ -38,7 +38,6 @@ __hhash_digest *commit(const prime_field::field_element *src, long long N)
 		{
 			stash[i] = merkle_tree::hash_double_field_element_merkle_damgard(encoded_codeword[2 * j][i], encoded_codeword[2 * j + 1][i], stash[i]);
 		}
-        stash[i].print();
 	}
 
     printf("\nCOMMIT %lld\n", N / column_size * 2);
