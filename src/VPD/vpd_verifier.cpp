@@ -10,21 +10,21 @@ inline bool verify_merkle(__hhash_digest h, std::vector<__hhash_digest> merkle_p
 {
 	// print_hhash_digest(&h);
 	// print (merkle_path);
-//    std::cout << "printing h: " << std::endl;
-//
-//    h.print_128();
-//    for (int i =0; i < merkle_path.size(); i++) {
-//        std::cout << i << std::endl;
-//        //merkle_path[i].print();
-//    }
+	//    std::cout << "printing h: " << std::endl;
+	//
+	//    h.print_128();
+	//    for (int i =0; i < merkle_path.size(); i++) {
+	//        std::cout << i << std::endl;
+	//        //merkle_path[i].print();
+	//    }
 
-//	printf("len %d pow %d\n", len, pow);
-//	for (int i = 0; i < value.size(); ++i)
-//	{
-//		printf("value[%d].0.real:%lld, img:%lld\n", i, value[i].first.real, value[i].first.img);
-//		printf("value[%d].1.real:%lld, img:%lld\n", i, value[i].second.real, value[i].second.img);
-//	}
-//	exit(0);
+	//	printf("len %d pow %d\n", len, pow);
+	//	for (int i = 0; i < value.size(); ++i)
+	//	{
+	//		printf("value[%d].0.real:%lld, img:%lld\n", i, value[i].first.real, value[i].first.img);
+	//		printf("value[%d].1.real:%lld, img:%lld\n", i, value[i].second.real, value[i].second.img);
+	//	}
+	//	exit(0);
 	__hhash_digest cur_hhash = merkle_path[len - 1];
 	__hhash_digest data[2];
 	for (int i = 0; i < len - 1; ++i)
@@ -300,12 +300,13 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 			auto tmplate = fri::cpd.rs_codeword[com.mx_depth - 1][0 << (log_slice_number + 1) | i << 1 | 0];
 			for (int j = 0; j < (1 << (rs_code_rate - 1)); ++j)
 			{
-                if (i%10 == 0 && j % 10 == 0) {
-                    printf("fri::cpd.rs_codeword[%d][%d] %llu %llu\n", com.mx_depth - 1, j << (log_slice_number + 1) | i << 1 | 0,
-                           fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].real,
-                           fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].img);
-                    //printf("template %llu %llu\n", tmplate.real, tmplate.img);
-                }
+				// if (i % 10 == 0 && j % 10 == 0)
+				//{
+				printf("fri::cpd.rs_codeword[%d][%d] %llu %llu\n", com.mx_depth - 1, j << (log_slice_number + 1) | i << 1 | 0,
+							 fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].real,
+							 fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].img);
+				printf("template.real:%llu, img:%llu\n", tmplate.real, tmplate.img);
+				// }
 
 				if (fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0] != tmplate)
 				{
@@ -313,6 +314,7 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 					return false;
 				}
 			}
+			exit(0);
 		}
 	}
 	return true;
