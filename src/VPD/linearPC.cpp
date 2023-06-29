@@ -40,7 +40,10 @@ __hhash_digest *commit(const prime_field::field_element *src, long long N)
 		}
 	}
 
+    printf("\nCOMMIT %lld\n", N / column_size * 2);
+
 	merkle_tree::merkle_tree_prover::create_tree(stash, N / column_size * 2, mt, sizeof(__hhash_digest), true);
+    printf("\nCOMMIT\n");
 	return mt;
 }
 
@@ -103,9 +106,9 @@ std::pair<long long, long long> generate_enc_circuit(long long input_size, long 
 		v.C.circuit[input_depth + 1].gates[output_size_so_far + i].ty = gate_types::custom_linear_comb;
 		v.C.circuit[input_depth + 1].gates[output_size_so_far + i].parameter_length = neighbor_size;
 
-		//        if ((input_depth + 1) >= 3 && (output_size_so_far + i) >= 158) {
-		//            printf("478 neighbor_size %d: %d, i: %llu, g: %llu\n", i, neighbor_size, input_depth + 1, output_size_so_far + i);
-		//        }
+//        if ((input_depth + 1) >= 3 && (output_size_so_far + i) >= 158) {
+//            printf("478 neighbor_size %d: %d, i: %llu, g: %llu\n", i, neighbor_size, input_depth + 1, output_size_so_far + i);
+//        }
 
 		v.C.circuit[input_depth + 1].gates[output_size_so_far + i].src = &v.C.circuit[input_depth + 1].src_expander_C_mempool[mempool_ptr];
 		v.C.circuit[input_depth + 1].gates[output_size_so_far + i].weight = &v.C.circuit[input_depth + 1].weight_expander_C_mempool[mempool_ptr];
@@ -142,9 +145,9 @@ std::pair<long long, long long> generate_enc_circuit(long long input_size, long 
 		v.C.circuit[final_output_depth].gates[output_size_so_far + i].ty = gate_types::custom_linear_comb;
 		v.C.circuit[final_output_depth].gates[output_size_so_far + i].parameter_length = neighbor_size;
 
-		//        if (final_output_depth >= 3 && (output_size_so_far + i) >= 158) {
-		//            printf("526 neighbor_size %lld: %lld, i: %llu, g: %llu\n", i, neighbor_size, final_output_depth, output_size_so_far + i);
-		//        }
+//        if (final_output_depth >= 3 && (output_size_so_far + i) >= 158) {
+//            printf("526 neighbor_size %lld: %lld, i: %llu, g: %llu\n", i, neighbor_size, final_output_depth, output_size_so_far + i);
+//        }
 
 		v.C.circuit[final_output_depth].gates[output_size_so_far + i].src = &v.C.circuit[final_output_depth].src_expander_D_mempool[mempool_ptr];
 		v.C.circuit[final_output_depth].gates[output_size_so_far + i].weight = &v.C.circuit[final_output_depth].weight_expander_D_mempool[mempool_ptr];
@@ -228,9 +231,9 @@ void generate_circuit(long long *query, long long N, int query_count, prime_fiel
 		v.C.circuit[final_output_depth].gates[output_so_far + i].ty = gate_types::custom_linear_comb;
 		v.C.circuit[final_output_depth].gates[output_so_far + i].parameter_length = D[0].r_neighbor[i].size();
 
-		//        if (final_output_depth >= 3 && (output_so_far + i) >= 158) {
-		//            printf("i: %lld, g: %lld, self.lce_ctx.d[0].r_neighbor[%llu].len(): %zu\n", final_output_depth, output_so_far + i, i, D[0].r_neighbor[i].size());
-		//        }
+//        if (final_output_depth >= 3 && (output_so_far + i) >= 158) {
+//            printf("i: %lld, g: %lld, self.lce_ctx.d[0].r_neighbor[%llu].len(): %zu\n", final_output_depth, output_so_far + i, i, D[0].r_neighbor[i].size());
+//        }
 
 		v.C.circuit[final_output_depth].gates[output_so_far + i].src = &v.C.circuit[final_output_depth].src_expander_D_mempool[D_mempool_ptr];
 		v.C.circuit[final_output_depth].gates[output_so_far + i].weight = &v.C.circuit[final_output_depth].weight_expander_D_mempool[D_mempool_ptr];
@@ -357,14 +360,14 @@ std::pair<prime_field::field_element, bool> tensor_product_protocol(prime_field:
 
 	// verifier samples query
 	long long *q = new long long[query_count];
-	// FILE *out = fopen("./q.txt", "w");
+	//FILE *out = fopen("./q.txt", "w");
 	for (int i = 0; i < query_count; ++i)
 	{
 		q[i] = rand() % codeword_size[0];
-		// fprintf(out, "%lld\n", q[i]);
+		//fprintf(out, "%lld\n", q[i]);
 	}
-	// fclose(out);
-	//  generate circuit
+	//fclose(out);
+	// generate circuit
 
 	generate_circuit(q, N / column_size, query_count, combined_message);
 
