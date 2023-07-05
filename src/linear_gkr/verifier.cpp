@@ -1040,18 +1040,18 @@ bool zk_verifier::verify(const char *output_path)
 	prime_field::field_element *r_0 = generate_randomness(C.circuit[C.total_depth - 1].bit_length), *r_1 = generate_randomness(C.circuit[C.total_depth - 1].bit_length);
 	prime_field::field_element *one_minus_r_0, *one_minus_r_1;
 
-//    std::ofstream r_0_f("r_0.txt");
-//    std::ofstream r_1_f("r_1.txt");
-//
-//    for(int i = 0; i < C.circuit[C.total_depth - 1].bit_length; i++) {
-//        r_0_f << r_0[i].real << " " << r_0[i].img << std::endl;
-//        r_1_f << r_1[i].real << " " << r_1[i].img << std::endl;
-//    }
-//
-//    r_0_f.close();
-//    r_1_f.close();
+	//    std::ofstream r_0_f("r_0.txt");
+	//    std::ofstream r_1_f("r_1.txt");
+	//
+	//    for(int i = 0; i < C.circuit[C.total_depth - 1].bit_length; i++) {
+	//        r_0_f << r_0[i].real << " " << r_0[i].img << std::endl;
+	//        r_1_f << r_1[i].real << " " << r_1[i].img << std::endl;
+	//    }
+	//
+	//    r_0_f.close();
+	//    r_1_f.close();
 
-    one_minus_r_0 = new prime_field::field_element[C.circuit[C.total_depth - 1].bit_length];
+	one_minus_r_0 = new prime_field::field_element[C.circuit[C.total_depth - 1].bit_length];
 	one_minus_r_1 = new prime_field::field_element[C.circuit[C.total_depth - 1].bit_length];
 
 	for (int i = 0; i < (C.circuit[C.total_depth - 1].bit_length); ++i)
@@ -1204,7 +1204,8 @@ bool zk_verifier::verify(const char *output_path)
 		}
 
 		auto tmp_alpha = generate_randomness(1), tmp_beta = generate_randomness(1);
-		alpha = tmp_alpha[0];
+		printf("tmp_alpha.real:%lld, imag:%lld\n", tmp_alpha[0].real, tmp_alpha[0].img);
+		printf("tmp_beta.real:%lld, imag:%lld\n", tmp_beta[0].real, tmp_beta[0].img);
 		beta = tmp_beta[0];
 		delete[] tmp_alpha;
 		delete[] tmp_beta;

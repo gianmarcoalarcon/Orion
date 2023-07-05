@@ -10,21 +10,21 @@ inline bool verify_merkle(__hhash_digest h, std::vector<__hhash_digest> merkle_p
 {
 	// print_hhash_digest(&h);
 	// print (merkle_path);
-//    std::cout << "printing h: " << std::endl;
-//
-//    h.print_128();
-//    for (int i =0; i < merkle_path.size(); i++) {
-//        std::cout << i << std::endl;
-//        //merkle_path[i].print();
-//    }
+	//    std::cout << "printing h: " << std::endl;
+	//
+	//    h.print_128();
+	//    for (int i =0; i < merkle_path.size(); i++) {
+	//        std::cout << i << std::endl;
+	//        //merkle_path[i].print();
+	//    }
 
-//	printf("len %d pow %d\n", len, pow);
-//	for (int i = 0; i < value.size(); ++i)
-//	{
-//		printf("value[%d].0.real:%lld, img:%lld\n", i, value[i].first.real, value[i].first.img);
-//		printf("value[%d].1.real:%lld, img:%lld\n", i, value[i].second.real, value[i].second.img);
-//	}
-//	exit(0);
+	//	printf("len %d pow %d\n", len, pow);
+	//	for (int i = 0; i < value.size(); ++i)
+	//	{
+	//		printf("value[%d].0.real:%lld, img:%lld\n", i, value[i].first.real, value[i].first.img);
+	//		printf("value[%d].1.real:%lld, img:%lld\n", i, value[i].second.real, value[i].second.img);
+	//	}
+	//	exit(0);
 	__hhash_digest cur_hhash = merkle_path[len - 1];
 	__hhash_digest data[2];
 	for (int i = 0; i < len - 1; ++i)
@@ -72,6 +72,7 @@ poly_commit::ldt_commitment poly_commit::poly_commit_prover::commit_phase(int lo
 	{
 		assert(ptr < log_length + rs_code_rate - log_slice_number);
 		randomness[ptr] = prime_field::random();
+		printf("randomness[%d].real:%lld, .img:%lld\n", ptr, randomness[ptr].real, randomness[ptr].img);
 		ret[ptr] = fri::commit_phase_step(randomness[ptr]);
 		codeword_size /= 2;
 		ptr++;
@@ -113,6 +114,7 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 
 	for (int rep = 0; rep < 33; ++rep)
 	{
+		printf("rep:%d\n", rep);
 		int slice_count = 1 << log_slice_number;
 		int slice_size = (1 << (log_length + rs_code_rate - log_slice_number));
 
@@ -136,14 +138,17 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 				{
 					max = (1 << (log_length + rs_code_rate - log_slice_number - i));
 					pow = rand() % max;
+					printf("i:%d, pow:%lld\n", i, pow);
 				} while (pow < (1 << (log_length - log_slice_number - i)) || pow % 2 == 1);
 				root_of_unity = prime_field::get_root_of_unity(log_length + rs_code_rate - log_slice_number - i);
 				y = fast_pow(root_of_unity, pow);
+				printf("\n");
 			}
 			else
 			{
 				root_of_unity = root_of_unity * root_of_unity;
 				pow = pow % (1 << (log_length + rs_code_rate - log_slice_number - i));
+				printf("i:%d, pow:%lld\n", i, pow);
 				pre_y = y;
 				y = y * y;
 			}
@@ -300,12 +305,13 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 			auto tmplate = fri::cpd.rs_codeword[com.mx_depth - 1][0 << (log_slice_number + 1) | i << 1 | 0];
 			for (int j = 0; j < (1 << (rs_code_rate - 1)); ++j)
 			{
-                if (i%10 == 0 && j % 10 == 0) {
-                    printf("fri::cpd.rs_codeword[%d][%d] %llu %llu\n", com.mx_depth - 1, j << (log_slice_number + 1) | i << 1 | 0,
-                           fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].real,
-                           fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].img);
-                    //printf("template %llu %llu\n", tmplate.real, tmplate.img);
-                }
+				// if (i % 10 == 0 && j % 10 == 0)
+				// {
+				// 	printf("fri::cpd.rs_codeword[%d][%d] %llu %llu\n", com.mx_depth - 1, j << (log_slice_number + 1) | i << 1 | 0,
+				// 				 fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].real,
+				// 				 fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0].img);
+				// 	// printf("template %llu %llu\n", tmplate.real, tmplate.img);
+				// }
 
 				if (fri::cpd.rs_codeword[com.mx_depth - 1][j << (log_slice_number + 1) | i << 1 | 0] != tmplate)
 				{
