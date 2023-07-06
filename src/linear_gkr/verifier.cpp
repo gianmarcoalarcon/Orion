@@ -6,7 +6,7 @@
 #include <fstream>
 #include "linear_gkr/random_generator.h"
 #include "VPD/vpd_verifier.h"
-
+#include <fstream>
 using namespace std;
 
 void zk_verifier::get_prover(zk_prover *pp)
@@ -1076,6 +1076,8 @@ bool zk_verifier::verify(const char *output_path)
 	prime_field::field_element alpha_beta_sum = a_0; //+ a_1
 
 	prime_field::field_element direct_relay_value;
+    std::ofstream t_alpha("tmp_alpha.txt");
+    std::ofstream t_beta("tmp_beta.txt");
 	for (int i = C.total_depth - 1; i >= 1; --i)
 	{
 		// std::cerr << "Bound u start" << std::endl;
@@ -1204,8 +1206,10 @@ bool zk_verifier::verify(const char *output_path)
 		}
 
 		auto tmp_alpha = generate_randomness(1), tmp_beta = generate_randomness(1);
-		printf("tmp_alpha.real:%lld, imag:%lld\n", tmp_alpha[0].real, tmp_alpha[0].img);
-		printf("tmp_beta.real:%lld, imag:%lld\n", tmp_beta[0].real, tmp_beta[0].img);
+        t_alpha << tmp_alpha[0].real << " " << tmp_alpha[0].img << std::endl;
+        t_beta << tmp_beta[0].real << " " << tmp_beta[0].img << std::endl;
+
+		alpha = tmp_alpha[0];
 		beta = tmp_beta[0];
 		delete[] tmp_alpha;
 		delete[] tmp_beta;
@@ -1222,6 +1226,9 @@ bool zk_verifier::verify(const char *output_path)
 		one_minus_r_0 = one_minus_r_u;
 		one_minus_r_1 = one_minus_r_v;
 	}
+
+    t_alpha.close();
+            t_beta.close();
 
 	std::cerr << "GKR Prove Time " << p->total_time << std::endl;
 	prime_field::field_element *all_sum;
