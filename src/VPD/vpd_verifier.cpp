@@ -11,20 +11,20 @@ inline bool verify_merkle(__hhash_digest h, std::vector<__hhash_digest> merkle_p
 {
 	// print_hhash_digest(&h);
 	// print (merkle_path);
-//    std::cout << "printing h: " << std::endl;
-//
-//    h.print_128();
-//    for (int i =0; i < merkle_path.size(); i++) {
-//        std::cout << i << std::endl;
-//        merkle_path[i].print_128();
-//    }
+	//    std::cout << "printing h: " << std::endl;
+	//
+	//    h.print_128();
+	//    for (int i =0; i < merkle_path.size(); i++) {
+	//        std::cout << i << std::endl;
+	//        merkle_path[i].print_128();
+	//    }
 
-//	printf("len %d pow %d\n", len, pow);
-//	for (int i = 0; i < value.size(); ++i)
-//	{
-//		printf("value[%d].0.real:%lld, img:%lld\n", i, value[i].first.real, value[i].first.img);
-//		printf("value[%d].1.real:%lld, img:%lld\n", i, value[i].second.real, value[i].second.img);
-//	}
+	//	printf("len %d pow %d\n", len, pow);
+	//	for (int i = 0; i < value.size(); ++i)
+	//	{
+	//		printf("value[%d].0.real:%lld, img:%lld\n", i, value[i].first.real, value[i].first.img);
+	//		printf("value[%d].1.real:%lld, img:%lld\n", i, value[i].second.real, value[i].second.img);
+	//	}
 
 	__hhash_digest cur_hhash = merkle_path[len - 1];
 	__hhash_digest data[2];
@@ -49,15 +49,17 @@ inline bool verify_merkle(__hhash_digest h, std::vector<__hhash_digest> merkle_p
 		prime_field::field_element data_ele[2];
 		data_ele[0] = value[i].first;
 		data_ele[1] = value[i].second;
+		// printf("data_ele[0].real:%lld, img:%lld\n", data_ele[0].real, data_ele[0].img);
+		// printf("data_ele[1].real:%lld, img:%lld\n", data_ele[1].real, data_ele[1].img);
 		memcpy(&data[0], data_ele, sizeof(__hhash_digest));
 		data[1] = value_h;
 		my_hhash(data, &value_h);
 	}
 
-    printf("value_hash: \n");
-    value_h.print_128();
-    printf("merkle: \n");
-    merkle_path[len - 1].print_128();
+	// printf("value_hash: \n");
+	// value_h.print_128();
+	// printf("merkle: \n");
+	// merkle_path[len - 1].print_128();
 	return equals(h, cur_hhash) && equals(value_h, merkle_path[len - 1]);
 }
 
@@ -73,19 +75,19 @@ poly_commit::ldt_commitment poly_commit::poly_commit_prover::commit_phase(int lo
 	__hhash_digest *ret = new __hhash_digest[log_length + rs_code_rate - log_slice_number];
 	prime_field::field_element *randomness = new prime_field::field_element[log_length + rs_code_rate];
 	int ptr = 0;
-    std::ofstream outFile("randomness.txt");
+	std::ofstream outFile("randomness.txt");
 	while (codeword_size > (1 << rs_code_rate))
 	{
-        printf("RANDOMNESS");
+		// printf("RANDOMNESS");
 		assert(ptr < log_length + rs_code_rate - log_slice_number);
 		randomness[ptr] = prime_field::random();
-        outFile << randomness[ptr].real << " " << randomness[ptr].img << std::endl;
-		printf("randomness[%d].real:%lld, .img:%lld\n", ptr, randomness[ptr].real, randomness[ptr].img);
+		outFile << randomness[ptr].real << " " << randomness[ptr].img << std::endl;
+		// printf("randomness[%d].real:%lld, .img:%lld\n", ptr, randomness[ptr].real, randomness[ptr].img);
 		ret[ptr] = fri::commit_phase_step(randomness[ptr]);
 		codeword_size /= 2;
 		ptr++;
 	}
-    outFile.close();
+	outFile.close();
 	ldt_commitment com;
 	com.commitment_hhash = ret;
 	com.final_rs_code = fri::commit_phase_final();
@@ -123,7 +125,7 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 
 	for (int rep = 0; rep < 33; ++rep)
 	{
-		printf("rep:%d\n", rep);
+		// printf("rep:%d\n", rep);
 		int slice_count = 1 << log_slice_number;
 		int slice_size = (1 << (log_length + rs_code_rate - log_slice_number));
 
@@ -140,27 +142,27 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 		long long pow, max;
 		for (int i = 0; i < log_length - log_slice_number; ++i)
 		{
-            printf("i %d %d %d %d\n",i, log_length - log_slice_number, log_length, log_slice_number);
+			// printf("i %d %d %d %d\n", i, log_length - log_slice_number, log_length, log_slice_number);
 			t0 = std::chrono::high_resolution_clock::now();
 			if (i == 0)
 			{
 				do
 				{
 					max = (1 << (log_length + rs_code_rate - log_slice_number - i));
-                    printf("max=%llu\n", max);
-                    int r = rand();
+					// printf("max=%llu\n", max);
+					int r = rand();
 					pow = r % max;
-                    printf("r=%d pow=%llu\n", r,pow);
+					// printf("r=%d pow=%llu\n", r, pow);
 				} while (pow < (1 << (log_length - log_slice_number - i)) || pow % 2 == 1);
 				root_of_unity = prime_field::get_root_of_unity(log_length + rs_code_rate - log_slice_number - i);
 				y = fast_pow(root_of_unity, pow);
-				printf("\n");
+				// printf("\n");
 			}
 			else
 			{
 				root_of_unity = root_of_unity * root_of_unity;
 				pow = pow % (1 << (log_length + rs_code_rate - log_slice_number - i));
-				printf("i:%d, pow:%lld\n", i, pow);
+				// printf("i:%d, pow:%lld\n", i, pow);
 				pre_y = y;
 				y = y * y;
 			}
@@ -190,6 +192,9 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 				alpha_l = fri::request_init_value_with_merkle(s0_pow, s1_pow, new_size, 0);
 				alpha_h = fri::request_init_value_with_merkle(s0_pow, s1_pow, new_size, 1);
 
+				// printf("alpha.1.last: \n");
+				// alpha_l.second[alpha_l.second.size() - 1]
+				// 		.print_128();
 				proof_size += new_size; // both h and p
 
 				t0 = std::chrono::high_resolution_clock::now();
@@ -201,14 +206,18 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 				time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
 				v_time += time_span.count();
 				beta = fri::request_step_commit(0, pow / 2, new_size);
-
+				// for (int j = 0; j < beta.second.size(); ++j)
+				// {
+				// 	printf("beta.1[%d]: \n", j);
+				// 	beta.second[j].print_128();
+				// }
 				proof_size += new_size;
 
 				t0 = std::chrono::high_resolution_clock::now();
-                printf("FINAL MERKLE\n");
+				// printf("FINAL MERKLE\n");
 				if (!verify_merkle(com.commitment_hhash[0], beta.second, beta.second.size(), pow / 2, beta.first))
 					return false;
-
+				// exit(0);
 				auto inv_mu = prime_field::inv(fast_pow(root_of_unity, pow / 2));
 				alpha.first.clear(), alpha.second.clear();
 				prime_field::field_element rou[2], x[2], inv_x[2];
@@ -292,10 +301,10 @@ bool poly_commit::poly_commit_verifier::verify_poly_commitment(prime_field::fiel
 				proof_size += new_size;
 
 				t0 = std::chrono::high_resolution_clock::now();
-                printf("FINAL MERKLE\n");
+				// printf("FINAL MERKLE\n");
 				if (!verify_merkle(com.commitment_hhash[i], beta.second, beta.second.size(), pow / 2, beta.first))
 					return false;
-                //exit(0);
+				// exit(0);
 				auto inv_mu = prime_field::inv(fast_pow(root_of_unity, pow / 2));
 				t1 = std::chrono::high_resolution_clock::now();
 				time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);

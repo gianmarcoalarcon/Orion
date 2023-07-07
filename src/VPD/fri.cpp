@@ -238,6 +238,7 @@ std::pair<std::vector<std::pair<prime_field::field_element, prime_field::field_e
 	for (int i = 0; i < slice_number; ++i)
 	{
 		pow_0 = cpd.rs_codeword_mapping[lvl][pow << log_slice_number | i];
+		// printf(" pow_0 %d\n", pow_0);
 		pow_0 /= 2;
 		if (!visited[lvl][pow_0 * 2])
 		{
@@ -260,7 +261,7 @@ std::pair<std::vector<std::pair<prime_field::field_element, prime_field::field_e
 	while (pow_0 != 1)
 	{
 		int pow1 = pow_0 ^ 1;
-		printf("pow_0:%d, pow_1:%d\n", pow_0, pow1);
+		// printf("lvl:%d, pow_0:%d, pow_1:%d\n", lvl, pow_0, pow1);
 		if (!visited[lvl][pow_0 ^ 1])
 		{
 			new_size += sizeof(__hhash_digest);
@@ -368,8 +369,26 @@ __hhash_digest fri::commit_phase_step(prime_field::field_element r)
 		}
 		hash_val[i] = htmp;
 	}
-	merkle_tree::merkle_tree_prover::create_tree(hash_val, nxt_witness_size / 2, cpd.merkle[current_step_no], sizeof(__hhash_digest), cpd.merkle[current_step_no] == NULL);
+	// printf("before create tree\n");
+	//  printf("element_num %d\n", nxt_witness_size / 2);
+	//  for (int i = 0; i < nxt_witness_size / 2; ++i)
+	//  {
+	//  	printf("hash_val[%d]\n", i);
+	//  	hash_val[i].print_128();
+	//  }
+	//  for (int i = 0; i < nxt_witness_size; ++i)
+	//  {
+	//  	printf("cpd.merkle[%d][%d]\n", current_step_no, i);
+	//  	cpd.merkle[current_step_no][nxt_witness_size + 1].print_128();
+	//  }
 
+	merkle_tree::merkle_tree_prover::create_tree(hash_val, nxt_witness_size / 2, cpd.merkle[current_step_no], sizeof(__hhash_digest), cpd.merkle[current_step_no] == NULL);
+	// printf("after create tree\n");
+	//  for (int i = 0; i < nxt_witness_size + 2; ++i)
+	//  {
+	//  	printf("cpd.merkle[%d][%d]\n", current_step_no, i);
+	//  	cpd.merkle[current_step_no][i].print_128();
+	//  }
 	auto t1 = std::chrono::high_resolution_clock::now();
 	auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t1 - t0);
 	__fri_timer += time_span.count();
